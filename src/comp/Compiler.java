@@ -170,6 +170,7 @@ public class Compiler {
      "{"  StatementList "}"
      */
     MethodDec methodDec = new MethodDec(name, type, qualifier, isStatic);
+    currentMethod = methodDec;
     lexer.nextToken();
     if (lexer.token != Symbol.RIGHTPAR) {
       methodDec.setParamList(formalParamDec());
@@ -628,12 +629,7 @@ public class Compiler {
         }
 
         String className = lexer.getStringValue();
-        /*
-         // encontre a classe className in symbol table
-         ClassDec aClass = symbolTable.getInGlobal(className);
-         if ( aClass == null ) ...
-         * // FEITO!
-         */
+
         aClass = symbolTable.getInGlobal(className);
         // Mostra erro se tentar dar New em uma classe que não existe
         if (aClass == null) {
@@ -649,12 +645,7 @@ public class Compiler {
           error.show(") expected");
         }
         lexer.nextToken();
-        /* return an object representing the creation of an object
-         something as
-         return new Cria_um_objeto(aClass);
-         � importante n�o utilizar className, uma string e sim aClass, um objeto.
-         * // FEITO!
-         */
+
         return new ObjectCreation(aClass);
       default:
         String variableName,
@@ -673,8 +664,8 @@ public class Compiler {
          an instance variable and m is a method
          */
         switch (lexer.token) {
+          // OK
           case SUPER:
-            //MessageSendToSuper messageSendToSuper = new MessageSendToSuper();
             className = currentClass.getName();
 
             // expression of the kind "super.m()"
@@ -698,33 +689,18 @@ public class Compiler {
               error.show("Class " + className + " doesn't have a method called " + methodName);
             }
 
-            return new MessageSendToSuper(aClass, aMethod, exprList);
-          //#  corrija
-                  /*
-           * CORRIGIDO!
-           deve existir uma variavel de instancia currentClass. 
-           aClass = currentClass.getSuperclass();
-           if ( aClass == null )
-           ...
-           aMethod = aClass.getMethod(methodName);
-           if ( aMethod == null )
-           ...
-
-           return new MessageSendToSuper(
-           aClass, aMethod, exprList);
-           */
+            return new MessageSendToSuper(new Variable("super", aClass), aMethod, exprList, aClass);
+          // OK
           case THIS:
             lexer.nextToken();
             if (lexer.token != Symbol.DOT) {
               // expression of the kind "this"
               error.show(". expected");
-              //# corrija
-                     /*
-               Verifique se nao estamos em um metodo estatico
-               o construtor da classe ThisExpr deve tomar a classe corrente
-               como parametro. Por que ?
-               return new ThisExpr(currentClass);
-               */
+              // Verificando se o metodo nao eh estatico
+              if (currentMethod.isIsStatic()) {
+                error.show("Cannot use 'this' in static context");
+              }
+
             } else {
               lexer.nextToken();
               if (lexer.token != Symbol.IDENT) {
@@ -736,41 +712,21 @@ public class Compiler {
               switch (lexer.token) {
                 case LEFTPAR:
                   // expression of the kind "this.m()"
-                  //# corrija
+
                   exprList = getRealParameters();
+
+                  // SEM - Verificando se o metodo existe
                   aMethod = currentClass.getMethod(ident);
                   if (aMethod == null) {
                     error.show("Method " + ident + " doesn't exist");
                   }
+                  // Checando os parametros
+                  paramCompare(aMethod, exprList);
+                  return new MessageSendToSelf(new Variable("this", currentClass), aMethod, exprList);
 
-                  // comparando o NUMERO de parametros passados vs. parametros 
-                  // que o metodo espera
-                  if (aMethod.getParamList().getSize() != exprList.getSize()) {
-                    error.show("Param count mismatch");
-                  }
-
-                  // comparando o TIPO dos parametros
-                  while(exprList.elements().hasNext()){
-                    Variable expParam = aMethod.getParamList().elements().next();
-                    Expr pasParam = exprList.elements().next();
-                    if(expParam.getType().getName() != pasParam.getType().getName())
-                      error.show("Type mismatch: '"+expParam.getType().getName()+"' expected. '"+pasParam.getType().getName()+"' given.");
-                  }
-                  
-                  /*
-                   * FEITO!
-                   procure o metodo ident na classe corrente:
-                   aMethod = currentClass.searchMethod(ident);
-                   if ( aMethod == null )
-                   ...
-                   * 
-                   confira se aMethod pode aceitar os parametros de exprList.
-                   return new MessageSendToSelf( aMethod, exprList );
-                   */
-                  break;
+                // OK
                 case DOT:
                   // expression of the kind "this.x.m()"
-                  //# corrija
                   lexer.nextToken();
                   if (lexer.token != Symbol.IDENT) {
                     error.show(CompilerError.ident_expected);
@@ -778,34 +734,35 @@ public class Compiler {
                   methodName = lexer.getStringValue();
                   lexer.nextToken();
                   exprList = getRealParameters();
-                /*
-                 em this.x.m(), x est� em ident e m em methodName
-                 procure por x na lista de vari�veis de inst�ncia da classe corrente:
-                 anInstanceVariable = currentClass.searchInstanceVariable(ident);
-                 if ( anInstanceVariable == null )
-                 ...
-                 pegue a classe declarada de x, o tipo de x:
-                 if ( ! (anInstanceVariable.getType() instanceof ClassDec) )
-                 ... // tipo de x n�o � uma classe, erro
-                 confira se a classe de x possui m�todo m:
-                 aClass = (ClassDec ) anInstanceVariable.getType();
-                 aMethod = aClass.searchMethod(methodName);
-                 if ( aMethod == null )
-                 ...
+                  // verificando se o atributo existe
+                  anInstanceVariable = currentClass.getVariable(ident);
+                  if (anInstanceVariable == null) {
+                    error.show("Trying to access undefined attribute '" + ident + "' in class '" + currentClass.getName() + "'");
+                  }
 
-                 return new MessageSendToVariable( anInstanceVariable, aMethod, exprList );
+                  // verifico se a variavel que estou tentando acessar eh um objeto, de fato
+                  if (!(anInstanceVariable.getType() instanceof ClassDec)) {
+                    error.show("Trying to access attribute '" + ident + "' in a non-object");
+                  }
 
-                 */
+                  // verificando se a classe do objeto tem um metodo com ese nome
+                  aClass = (ClassDec) anInstanceVariable.getType();
+                  aMethod = aClass.getMethod(methodName);
+                  if (aMethod == null) {
+                    error.show("Trying to access undefined method '" + methodName + "' in class '" + currentClass.getName() + "'");
+                  }
+
+                  return new MessageSendToVariable(anInstanceVariable, aMethod, exprList);
+
+                // OK
                 default:
-                // expression of the kind "this.x"
-                //# corrija
-                           /*
-                 procure x na lista de vari�veis de inst�ncia da classe corrente:
-                 anInstanceVariable = currentClass.searchInstanceVariable(ident);
-                 if ( anInstanceVariable == null )
-                 ...
-                 return new VariableExpr( anInstanceVariable )
-                 */
+                  // expression of the kind "this.x"
+                  // Verificando se existe o atributo x na classe atual
+                  anInstanceVariable = currentClass.getVariable(ident);
+                  if (anInstanceVariable == null) {
+                    error.show("Trying to access undefined attribute '" + ident + "' in class '" + currentClass.getName() + "'");
+                  }
+                  return new VariableExpr(anInstanceVariable);
               }
 
             }
@@ -815,12 +772,11 @@ public class Compiler {
             lexer.nextToken();
             if (lexer.token != Symbol.DOT) {
               // expression of the kind "x"
-              //# corrija
-                     /*
-               if ( (aVariable = symbolTable.get...(variableName)) == null )
-               ...
-               return new VariableExpr(aVariable);
-               */
+              if ((aVariable = symbolTable.getInLocal(variableName)) == null) {
+                error.show("Trying to access undefined attribute '" + variableName + "' in class '" + currentClass.getName() + "'");
+              }
+              return new VariableExpr(aVariable);
+
             } else {
               // expression of the kind "x.m()"
               lexer.nextToken();  // eat the dot
@@ -829,39 +785,40 @@ public class Compiler {
                   methodName = lexer.getStringValue();
                   lexer.nextToken();
                   exprList = getRealParameters();
-                  //#  corrija
-                           /*
+                  if ((aVariable = symbolTable.getInLocal(variableName)) != null) {
+                    // x is a variable
+                    Type t = aVariable.getType();
+                    if (!(t instanceof ClassDec)) {
+                      error.show("Trying to access attribute '" + variableName + "' in a non-object");
+                    }
+                    aClass = (ClassDec) t;
 
-                   if ( (aVariable = symbolTable.getInLocal(variableName)) != null ) {
-                   // x is a variable
-                   Type t = aVariable.getType();
-                   teste se t � do tipo ClassDec nesta linha
-                   aClass = (ClassDec ) t;
-                   verifique se a classe aClass possui um m�todo chamado methodName
-                   que pode receber como par�metros as express�es de exprList.
-                   Algo como (apenas o in�cio):
-                   aMethod = aClass.searchMethod(methodName);
-                   ...
-                   return new MessageSendToVariable(
-                   aVariable, aMethod, exprList);
+                    // Verificando se o metodo existe
+                    aMethod = aClass.getMethod(methodName);
+                    if (aMethod == null) {
+                      error.show("Trying to access undefined method '" + methodName + "' in class '" + aClass.getName() + "'");
+                    }
+                    // Checando os parametros
+                    paramCompare(aMethod, exprList);
 
-                   }
-                   else {
-                   // em "x.m()", x is not a variable. Should be a class name
-                   if ( (aClass = symbolTable.getInGlobal(variableName)) == null )
-                   ...
-                   nesta linha, verifique se methodName � um m�todo est�tico da
-                   classe aClass que pode aceitar como par�metros as express�es de exprList.
-                   Algo como (apenas o in�cio):
-                   aStaticMethod = aClass.searchStaticMethod(methodName);
-                   ...
-                   return new MessageSendStatic(aClass, aStaticMethod, exprList);
-                   }
+                    return new MessageSendToVariable(aVariable, aMethod, exprList);
 
+                  } else {
+                    // em "x.m()", x is not a variable. Should be a class name
+                    if ((aClass = symbolTable.getInGlobal(variableName)) == null) {
+                      error.show("Trying to access undefined attribute '" + variableName + "' in class '" + aClass.getName() + "'");
+                    }
 
-                   */
-
-                  break;
+                    // nesta linha, verifique se methodName e um metodo estatico da
+                    // classe aClass que pode aceitar como parmetros as expressoes 
+                    // de exprList.Algo como (apenas o inicio):
+                    aMethod = aClass.getMethod(methodName);
+                    if (aMethod.isIsStatic()) {
+                      // Checando os parametros
+                      paramCompare(aMethod,exprList);
+                    }
+                    return new MessageSendStatic(new Variable("", aClass), aMethod, exprList);
+                  }
                 default:
                   error.show(CompilerError.ident_expected);
               }
@@ -874,7 +831,23 @@ public class Compiler {
     }
 
   }
+  private void paramCompare(Method aMethod, ExprList exprList){
+    // SEM - comparando o NUMERO de parametros passados vs. parametros 
+    // que o metodo espera
+    if (aMethod.getParamList().getSize() != exprList.getSize()) {
+      error.show("Param count mismatch");
+    }
 
+    // SEM - comparando o TIPO dos parametros
+    while (exprList.elements().hasNext()) {
+      Variable expParam = aMethod.getParamList().elements().next();
+      Expr pasParam = exprList.elements().next();
+      // verifico se o nome dos tipos eh igual
+      if (expParam.getType().getName() != pasParam.getType().getName()) {
+        error.show("Param type mismatch: '" + expParam.getType().getName() + "' expected. '" + pasParam.getType().getName() + "' given.");
+      }
+    }
+  }
   private NumberExpr number() {
 
     NumberExpr e = null;
@@ -1060,4 +1033,5 @@ public class Compiler {
   private Lexer lexer;
   private CompilerError error;
   private ClassDec currentClass;
+  private MethodDec currentMethod;
 }

@@ -3,7 +3,7 @@ package ast;
 
 abstract class MessageSend  extends Expr  {
 
-  public MessageSend(ClassDec variable, MethodDec method, ExprList exprList ) {
+  public MessageSend(Variable variable, MethodDec method, ExprList exprList ) {
     this.exprList = exprList;
     this.variable = variable;
     this.method = method;
@@ -17,11 +17,11 @@ abstract class MessageSend  extends Expr  {
     this.exprList = exprList;
   }
 
-  public ClassDec getVariable() {
+  public Variable getVariable() {
     return variable;
   }
 
-  public void setVariable(ClassDec variable) {
+  public void setVariable(Variable variable) {
     this.variable = variable;
   }
 
@@ -35,7 +35,7 @@ abstract class MessageSend  extends Expr  {
 
   
   private ExprList exprList;
-  private ClassDec variable;
+  private Variable variable;
   private MethodDec method;
 }
 

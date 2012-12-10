@@ -47,6 +47,16 @@ public class ClassDec extends Type {
     }
     return null;
   }
+  public InstanceVariable getVariable(String name){
+    InstanceVariable variable;
+    while(instanceVariableList.elements().hasNext()){
+       variable = instanceVariableList.elements().next();
+      if(variable.getName() == name){
+        return variable;
+      }
+    }
+    return null;
+  }
   private String name;
   private ClassDec superclass;
   private InstanceVariableList instanceVariableList;

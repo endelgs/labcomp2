@@ -3,7 +3,10 @@ package ast;
 
 public class MessageSendToSelf extends MessageSend {
     
-    public Type getType() { 
+  public MessageSendToSelf(Variable variable, MethodDec method, ExprList exprList) {
+    super(variable, method, exprList);
+  }  
+  public Type getType() { 
         return null;
     }
     
