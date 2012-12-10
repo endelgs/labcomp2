@@ -575,6 +575,7 @@ public class Compiler {
     }
   }
 
+  // OK
   private Expr factor() {
     /*
      Factor ::= BasicValue | RightValue | MessageSend  | "(" Expression ")"
@@ -815,7 +816,7 @@ public class Compiler {
                     aMethod = aClass.getMethod(methodName);
                     if (aMethod.isIsStatic()) {
                       // Checando os parametros
-                      paramCompare(aMethod,exprList);
+                      paramCompare(aMethod, exprList);
                     }
                     return new MessageSendStatic(new Variable("", aClass), aMethod, exprList);
                   }
@@ -831,7 +832,8 @@ public class Compiler {
     }
 
   }
-  private void paramCompare(Method aMethod, ExprList exprList){
+
+  private void paramCompare(Method aMethod, ExprList exprList) {
     // SEM - comparando o NUMERO de parametros passados vs. parametros 
     // que o metodo espera
     if (aMethod.getParamList().getSize() != exprList.getSize()) {
@@ -848,6 +850,7 @@ public class Compiler {
       }
     }
   }
+
   private NumberExpr number() {
 
     NumberExpr e = null;
@@ -868,31 +871,16 @@ public class Compiler {
      LocalDec ::= Type IdList ";"
      */
 
-
     // an assignment, a message send or a local variable declaration
-	      /*
-     ##########################################################################
-     ##########################################################################
-     IMPORTANTE:
-     a implementacao deste metodo e muitissimo parecido com o do metodo
-     factor. Neste metodo, factor, coloquei **muito** mais partes implementadas
-     do que neste metodo assignmentMessageSendLocalVarDecStatement. A grande
-     diferenca entre os dois metodos e que factor analisa uma expressao e
-     assignmentMessageSendLocalVarDecStatement analisa uma instrucao. Isto e, um
-     envio de mensagem "x.m()" em factor deve retornar um valor e em
-     assignmentMessageSendLocalVarDecStatement nao deve retornar nada.
-     Resumindo: faca factor primeiro e depois copie e cole grande parte do
-     que voce fez para este metodo.
-
-     ##########################################################################
-     ##########################################################################
-
-     */
-
 
     String methodName, variableName;
     ExprList exprList;
     Statement result = null;
+    MethodDec aMethod;
+    ClassDec aClass;
+    InstanceVariable anInstanceVariable;
+    Variable variable;
+    String id;
     /*
      there are eight possibilities:
      this.id()
@@ -910,6 +898,10 @@ public class Compiler {
         lexer.nextToken();
         if (lexer.token != Symbol.DOT) {
           error.show(". expected");
+          // Verificando se o metodo nao eh estatico
+          if (currentMethod.isIsStatic()) {
+            error.show("Cannot use 'this' in static context");
+          }
         }
         lexer.nextToken();
         if (lexer.token != Symbol.IDENT) {
@@ -918,14 +910,26 @@ public class Compiler {
         String ident = lexer.getStringValue();
         lexer.nextToken();
         switch (lexer.token) {
+          // OK
           case ASSIGN:
             // this.id = expr
             lexer.nextToken();
             Expr anExpr = expr();
-            //# corrija
-	                  /* result = new AssignmentStatement( pointer to instance variable,
-             anExpr); */
+
+            // Verifico se a variavel pra quem to atribuindo existe, de fato
+            InstanceVariable instanceVariable = currentClass.getVariable(ident);
+            if (instanceVariable == null) {
+              error.show("Attempted to assign value to undefined attribute '" + ident + "' in class '" + currentClass.getName() + "'");
+            }
+            // Verificando se os tipos sao iguais
+            if(!anExpr.getType().getName().equals(instanceVariable.getType().getName())){
+              error.show("Type mismatch: tried to assign '"+anExpr.getType().getName()
+                      +"' to '"+instanceVariable.getType().getName()+"'");
+            }
+
+            result = new AssignmentStatement(instanceVariable, anExpr);
             break;
+          // OK
           case DOT:
             // this.id.id()
             lexer.nextToken();
@@ -935,22 +939,43 @@ public class Compiler {
             methodName = lexer.getStringValue();
             lexer.nextToken();
             exprList = getRealParameters();
-            //# corrija
-	                  /* result = new MessageSendStatement(
-             new MessageSendToVariable( pointer to variable,
-             pointer to method, exprList) );  */
+            
+            // verificando se o atributo existe
+            anInstanceVariable = currentClass.getVariable(ident);
+            if (anInstanceVariable == null) {
+              error.show("Trying to access undefined attribute '" + ident + "' in class '" + currentClass.getName() + "'");
+            }
+
+            // verifico se a variavel que estou tentando acessar eh um objeto, de fato
+            if (!(anInstanceVariable.getType() instanceof ClassDec)) {
+              error.show("Trying to access attribute '" + ident + "' in a non-object");
+            }
+
+            // verificando se a classe do objeto tem um metodo com ese nome
+            aClass = (ClassDec) anInstanceVariable.getType();
+            aMethod = aClass.getMethod(methodName);
+            if (aMethod == null) {
+              error.show("Trying to access undefined method '" + methodName + "' in class '" + currentClass.getName() + "'");
+            }
+            result = new MessageSendStatement(new MessageSendToVariable(anInstanceVariable, aMethod, exprList));
             break;
           case LEFTPAR:
             // this.id()
             exprList = getRealParameters();
-            //# corrija
-	                  /* result = new MessageSendStatement(
-             new MessageSendToSelf( pointer to method, exprList ) ); */
+            // SEM - Verificando se o metodo existe
+            aMethod = currentClass.getMethod(ident);
+            if (aMethod == null) {
+              error.show("Method " + ident + " doesn't exist");
+            }
+            // Checando os parametros
+            paramCompare(aMethod, exprList);
+            result = new MessageSendStatement(new MessageSendToSelf(new Variable("this", currentClass), aMethod, exprList));
             break;
           default:
             error.show(CompilerError.ident_expected);
         }
         break;
+      // OK
       case SUPER:
         // super.id()
         lexer.nextToken();
@@ -964,31 +989,60 @@ public class Compiler {
         methodName = lexer.getStringValue();
         lexer.nextToken();
         exprList = getRealParameters();
-        //# corrija
-        // result = new MessageSendStatement(
-        //     new MessageSendToSuper( pointer to class, pointer to method, exprList) );
+        aClass = currentClass.getSuperclass();
+        if (aClass == null) {
+          error.show("Class " + aClass.getName() + " doesn't have a superclass");
+        }
+        aMethod = aClass.getMethod(methodName);
+        if (aMethod == null) {
+          error.show("Class " + aClass.getName() + " doesn't have a method called " + methodName);
+        }
+        paramCompare(aMethod, exprList);
+        result = new MessageSendStatement(new MessageSendToSuper(new Variable("super", aClass), aMethod, exprList, aClass));
+
         break;
+      // se encontrar um identificador, pode ser uma atribuicao ou declaracao de
+      // variavel (com tipo definido pelo usuario)
       case IDENT:
         variableName = lexer.getStringValue();
         lexer.nextToken();
         switch (lexer.token) {
+          // OK
           case ASSIGN:
             // id = expr
             lexer.nextToken();
             Expr anExpr = expr();
-            //# corrija
-	                  /* result = new AssignmentStatement( pointer to variable,
-             anExpr ); */
+            // verificando se a variavel pra quem estou atribuindo
+            // realmente existe
+            variable = symbolTable.getInLocal(variableName);
+            if(variable == null)
+              error.show("Variable '"+variableName+"' doesn't exist in this context");
+            if(!variable.getType().getName().equals(anExpr.getType().getName())){
+              error.show("Type mismatch: tried to assign '"+anExpr.getType().getName()
+                      +"' to '"+variable.getType().getName()+"'");
+            }
+            
+            result = new AssignmentStatement(variable,anExpr);
             break;
           case IDENT:
+           id = lexer.getStringValue();
             // id id;
             // variableName id
-
+            // variable = symbolTable.getIn
+            // verificando se o TIPO existe
+            aClass = symbolTable.getInGlobal(variableName);
+            if(aClass == null){
+              error.show("Class '"+variableName+"' doesn't exist");
+            }
+            variable = symbolTable.getInLocal(id);
+            if(variable == null){
+              error.show("Variable '"+id+"' doesn't exist");
+            }
             // variableName must be the name of a class
             // replace null in the statement below by
             // a point to the class named variableName.
             // A search in the symbol table is necessary.
-            localDec(null);
+            result = localDec(aClass);
             break;
           case DOT:
             // id.id()
@@ -996,10 +1050,22 @@ public class Compiler {
             methodName = lexer.getStringValue();
             lexer.nextToken();
             exprList = getRealParameters();
-            //# corrija
-	                  /* result = new MessageSendStatement(
-             new MessageSendToVariable( pointer to variable,
-             pointer to method, exprList ) ); */
+            
+            // verificando se a variavel existe
+            variable = symbolTable.getInLocal(variableName);
+            if(variable == null)
+              error.show("Undefined variable '"+variableName+"'");
+            
+            // verificando se o metodo existe na classe daquela variavel
+            aMethod = ((ClassDec)(variable.getType())).getMethod(methodName);
+            if(aMethod == null)
+              error.show("Call to undefined method '"+methodName+"'");
+            
+            // comparando os parametros
+            paramCompare(aMethod, exprList);
+            result = new MessageSendStatement(
+             new MessageSendToVariable( variable,
+             aMethod, exprList ) );
             break;
           default:
             error.show(". or = expected");
