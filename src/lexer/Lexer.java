@@ -43,6 +43,7 @@ public class Lexer {
 		keywordsTable.put( "return", Symbol.RETURN );
 		keywordsTable.put( "class", Symbol.CLASS );
 		keywordsTable.put( "super", Symbol.SUPER );
+                keywordsTable.put( "static", Symbol.STATIC );
 		keywordsTable.put( "this", Symbol.THIS );
 		keywordsTable.put( "new", Symbol.NEW );
 		keywordsTable.put( "public", Symbol.PUBLIC );
