@@ -6,8 +6,7 @@ public class MessageSendStatement extends Statement {
   }
 
    public void genK( PW pw ) {
-      pw.printIdent("");
-      // messageSend.genK(pw);
+      messageSend.genK(pw);
       pw.println(";");
    }
 

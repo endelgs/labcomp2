@@ -14,7 +14,11 @@ public class WhileStatement extends Statement {
 
   @Override
   public void genK(PW pw) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    
+    pw.print("while(");
+    expr.genK(pw, false);
+    pw.println(")");
+    statement.genK(pw);
   }
 
   public Expr getExpr() {

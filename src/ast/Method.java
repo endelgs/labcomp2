@@ -11,7 +11,9 @@ public class Method {
         this.qualifier = qualifier;
         this.isStatic = isStatic;
     }
-
+    public void genK(PW pw){
+      pw.print(name);
+    }
     public String getName() { return name; }
 
     public Type getType() {
@@ -35,11 +37,11 @@ public class Method {
   }
 
   public ArrayList<Statement> getStatementList() {
-    return statementList;
+    return statementList.getStatementList();
   }
 
   public void setStatementList(ArrayList<Statement> statementList) {
-    this.statementList = statementList;
+    this.statementList.setStatementList(statementList);
   }
 
   public ParamList getParamList() {
@@ -54,6 +56,6 @@ public class Method {
     private Type type;
     private Symbol qualifier;
     private boolean isStatic = false;
-    private ArrayList<Statement> statementList;
+    private StatementList statementList;
     private ParamList paramList;
 }

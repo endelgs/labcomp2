@@ -25,7 +25,7 @@ public class LocalVarList extends Statement{
   @Override
   public void genK(PW pw) {
     for(int i = 0; i < localList.size(); i++){
-      localList.get(i);
+      localList.get(i).genK(pw);
     }
   }
 

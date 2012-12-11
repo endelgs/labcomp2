@@ -11,6 +11,11 @@ public class MessageSendToSelf extends MessageSend {
     }
     
     public void genK( PW pw, boolean putParenthesis ) {
+      pw.print("this.");
+      pw.print(getMethod().getName());
+      pw.print("(");
+      getExprList().genK(pw);
+      pw.print(")");
     }
     
     

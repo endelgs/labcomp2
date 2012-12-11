@@ -12,7 +12,6 @@ public class NullStatement extends Statement{
 
   @Override
   public void genK(PW pw) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    pw.println(";");
   }
-  
 }

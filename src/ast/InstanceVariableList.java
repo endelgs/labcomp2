@@ -2,7 +2,7 @@ package ast;
 
 import java.util.*;
 
-public class InstanceVariableList {
+public class InstanceVariableList extends MemberList{
 
     public InstanceVariableList() {
        instanceVariableList = new ArrayList<InstanceVariable>();
@@ -21,14 +21,9 @@ public class InstanceVariableList {
     }
     public void genK(PW pw){
       if(instanceVariableList != null){
-        if(instanceVariableList.get(0).getIsStatic())
-          pw.print("static ");
-        pw.print("private ");
-        
         for(int i = 0; i < instanceVariableList.size(); i++){
-          pw.print(instanceVariableList.get(i).getName()+"");
+          instanceVariableList.get(i).genK(pw);
         }
-        
       }
       
     }

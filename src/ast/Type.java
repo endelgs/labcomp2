@@ -15,7 +15,9 @@ abstract public class Type {
     public String getName() {
         return name;
     }
-
+    public void genK(PW pw){
+      pw.print(name+" ");
+    }
     abstract public String getCname();
 
     private String name;

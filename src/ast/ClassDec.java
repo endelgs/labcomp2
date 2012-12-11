@@ -5,10 +5,30 @@ public class ClassDec extends Type {
       super(name);
    }
    public void genK(PW pw){
-     pw.print("class "+name+" {");
-     while(instanceVariableList.elements().hasNext()){
-       InstanceVariable i = instanceVariableList.elements().next();
-       i.genK(pw);
+     pw.print("class "+name);
+     if(superclass != null)
+       pw.print(" extends "+superclass.getName());
+     
+     // Imprimindo a lista de variaveis
+     if(instanceVariableList != null){
+      while(instanceVariableList.elements().hasNext()){
+        InstanceVariable i = instanceVariableList.elements().next();
+        i.genK(pw);
+      }
+     }
+     // Imprimindo a lista de metodos publicos
+     if(publicMethodList != null){
+      while(publicMethodList.elements().hasNext()){
+        MethodDec i = publicMethodList.elements().next();
+        i.genK(pw);
+      }
+     }
+     // Imprimindo a lista de metodos privados
+     if(privateMethodList != null){
+      while(privateMethodList.elements().hasNext()){
+        MethodDec i = privateMethodList.elements().next();
+        i.genK(pw);
+      }
      }
      pw.print("}");
    }

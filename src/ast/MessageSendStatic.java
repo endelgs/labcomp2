@@ -14,7 +14,12 @@ public class MessageSendStatic extends MessageSend{
   }
   @Override
   public void genK(PW pw, boolean putParenthesis) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    pw.print(getVariable().getType().getName());
+    pw.print(".");
+    pw.print(getMethod().getName());
+    pw.print("(");
+    getExprList().genK(pw);
+    pw.print(")");
   }
 
   @Override

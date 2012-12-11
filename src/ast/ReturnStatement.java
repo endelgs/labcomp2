@@ -12,7 +12,8 @@ public class ReturnStatement extends Statement{
 
   @Override
   public void genK(PW pw) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    pw.print("return ");
+    expr.genK(pw,false);
   }
 
   public Expr getExpr() {

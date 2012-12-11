@@ -16,7 +16,10 @@ public class ReadStatement extends Statement{
   }
   @Override
   public void genK(PW pw) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    pw.print("read (");
+    for(int i = 0; i< variableList.size(); i++)
+      variableList.get(i).genK(pw);
+    pw.print(")");
   }
 
   public ArrayList<Variable> getVariableList() {

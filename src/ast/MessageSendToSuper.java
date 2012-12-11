@@ -12,7 +12,11 @@ public class MessageSendToSuper extends MessageSend {
     }
 
     public void genK( PW pw, boolean putParenthesis ) {
-        
+      pw.print("super.");
+      pw.print(getMethod().getName());
+      pw.print("(");
+      getExprList().genK(pw);
+      pw.print(")");
     }
     private ClassDec superclass;
 }
