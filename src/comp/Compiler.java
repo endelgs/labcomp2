@@ -88,26 +88,32 @@ public class Compiler {
       }
       superclassName = lexer.getStringValue();
 
-      lexer.nextToken();
+      
     }
+    //lexer.nextToken();
     if (lexer.token != Symbol.LEFTCURBRACKET) {
       error.show("{ expected", true);
     }
     lexer.nextToken();
     ClassDec classDec = new ClassDec(className);
+    symbolTable.putInGlobal(className, classDec);
+    
     if (superclassName != null) {
       classDec.setSuperclass(new ClassDec(superclassName));
     }
     // lendo os metodos e atributos da classe
     while (lexer.token == Symbol.PRIVATE
-            || lexer.token == Symbol.PUBLIC) {
+            || lexer.token == Symbol.PUBLIC
+            || lexer.token == Symbol.STATIC) {
 
       Symbol qualifier;
       boolean isStatic = false;
-      switch (lexer.token) {
-        case STATIC:
+      if(lexer.token == Symbol.STATIC){
           isStatic = true;
           lexer.nextToken();
+      }
+      
+      switch (lexer.token) { 
         case PRIVATE:
           lexer.nextToken();
           qualifier = Symbol.PRIVATE;
@@ -186,6 +192,7 @@ public class Compiler {
 
     lexer.nextToken();
     methodDec.setStatementList(statementList());
+    lexer.nextToken();
     if (lexer.token != Symbol.RIGHTCURBRACKET) {
       error.show("} expected");
     }
