@@ -9,7 +9,7 @@ package comp;
  * @author endel
  */
 public class zuera {
-  public zuera(){
+  public zuera(String x){
     
   }
 }
