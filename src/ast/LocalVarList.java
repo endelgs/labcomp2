@@ -23,8 +23,10 @@ public class LocalVarList extends Statement{
     private ArrayList<Variable> localList;
 
   @Override
-  public void genC(PW pw) {
-    throw new UnsupportedOperationException("Not supported yet.");
+  public void genK(PW pw) {
+    for(int i = 0; i < localList.size(); i++){
+      localList.get(i);
+    }
   }
 
 }

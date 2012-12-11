@@ -15,8 +15,15 @@ public class IfStatement extends Statement{
     
   }
   @Override
-  public void genC(PW pw) {
-    throw new UnsupportedOperationException("Not supported yet.");
+  public void genK(PW pw) {
+    pw.print("if(");
+    expr.genK(pw, false);
+    pw.println(")");
+    ifStatements.genK(pw);
+    
+    if(elseStatements != null)
+      elseStatements.genK(pw);
+    
   }
 
   public Expr getExpr() {

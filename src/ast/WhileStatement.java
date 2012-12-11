@@ -13,7 +13,7 @@ import java.util.ArrayList;
 public class WhileStatement extends Statement {
 
   @Override
-  public void genC(PW pw) {
+  public void genK(PW pw) {
     throw new UnsupportedOperationException("Not supported yet.");
   }
 

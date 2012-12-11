@@ -6,7 +6,7 @@ public class LiteralStringExpr extends Expr {
         this.literalString = literalString;
     }
     
-    public void genC( PW pw, boolean putParenthesis ) {
+    public void genK( PW pw, boolean putParenthesis ) {
         pw.print(literalString);
     }
     

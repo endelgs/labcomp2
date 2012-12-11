@@ -6,5 +6,15 @@ public class InstanceVariable extends Variable {
         super(name, type);
         this.isStatic = isStatic;
     }
+    public boolean getIsStatic(){
+      return isStatic;
+    }
+    public void genK(PW pw){
+      if(isStatic)
+        pw.print("static ");
+      pw.print("private ");
+      pw.print(getType().getName()+" ");
+      pw.print(getName()+";\n");
+    }
     private boolean isStatic;
 }

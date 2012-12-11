@@ -11,7 +11,7 @@ package ast;
 public class BreakStatement extends Statement{
 
   @Override
-  public void genC(PW pw) {
-    throw new UnsupportedOperationException("Not supported yet.");
+  public void genK(PW pw) {
+    pw.print("break;");
   }
 }

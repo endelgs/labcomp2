@@ -19,7 +19,19 @@ public class InstanceVariableList {
     public int getSize() {
         return instanceVariableList.size();
     }
-
+    public void genK(PW pw){
+      if(instanceVariableList != null){
+        if(instanceVariableList.get(0).getIsStatic())
+          pw.print("static ");
+        pw.print("private ");
+        
+        for(int i = 0; i < instanceVariableList.size(); i++){
+          pw.print(instanceVariableList.get(i).getName()+"");
+        }
+        
+      }
+      
+    }
     private ArrayList<InstanceVariable> instanceVariableList;
 
 }

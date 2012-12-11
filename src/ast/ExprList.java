@@ -33,11 +33,11 @@ public class ExprList {
     public int getSize(){
       return v.size();
     }
-    public void genC( PW pw ) {
+    public void genK( PW pw ) {
 
         int size = v.size();
         for ( Expr e : v ) {
-        	e.genC(pw, false);
+        	e.genK(pw, false);
             if ( --size > 0 )
                 pw.print(", ");
         }

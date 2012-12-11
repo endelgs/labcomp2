@@ -2,7 +2,7 @@ package ast;
 
 public class NullExpr extends Expr {
     
-   public void genC( PW pw, boolean putParenthesis ) {
+   public void genK( PW pw, boolean putParenthesis ) {
       pw.printIdent("NULL");
    }
    

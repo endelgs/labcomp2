@@ -15,7 +15,7 @@ public class ReadStatement extends Statement{
     variableList = new ArrayList<Variable>();
   }
   @Override
-  public void genC(PW pw) {
+  public void genK(PW pw) {
     throw new UnsupportedOperationException("Not supported yet.");
   }
 

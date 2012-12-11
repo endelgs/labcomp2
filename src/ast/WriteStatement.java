@@ -11,7 +11,7 @@ package ast;
 public class WriteStatement extends Statement{
 
   @Override
-  public void genC(PW pw) {
+  public void genK(PW pw) {
     throw new UnsupportedOperationException("Not supported yet.");
   }
 

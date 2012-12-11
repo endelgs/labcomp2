@@ -25,8 +25,8 @@ public class ObjectCreation extends Expr{
   private ClassDec classDec;
 
   @Override
-  public void genC(PW pw, boolean putParenthesis) {
-    throw new UnsupportedOperationException("Not supported yet.");
+  public void genK(PW pw, boolean putParenthesis) {
+    pw.println("new "+classDec.getName()+"()");
   }
 
   @Override

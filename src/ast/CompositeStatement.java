@@ -17,7 +17,10 @@ public class CompositeStatement extends Statement{
   private ArrayList<Statement> statementList;
 
   @Override
-  public void genC(PW pw) {
-    throw new UnsupportedOperationException("Not supported yet.");
+  public void genK(PW pw) {
+    pw.println("{");
+    for(int i = 0; i < statementList.size(); i++)
+      statementList.get(i).genK(pw);
+    pw.println("}");
   }
 }

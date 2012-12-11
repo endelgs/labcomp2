@@ -4,7 +4,14 @@ public class ClassDec extends Type {
    public ClassDec( String name ) {
       super(name);
    }
-   
+   public void genK(PW pw){
+     pw.print("class "+name+" {");
+     while(instanceVariableList.elements().hasNext()){
+       InstanceVariable i = instanceVariableList.elements().next();
+       i.genK(pw);
+     }
+     pw.print("}");
+   }
    public String getCname() {
       return getName();
    }
