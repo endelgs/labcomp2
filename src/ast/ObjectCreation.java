@@ -31,6 +31,6 @@ public class ObjectCreation extends Expr{
 
   @Override
   public Type getType() {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return classDec;
   }
 }

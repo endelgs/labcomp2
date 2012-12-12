@@ -3,6 +3,7 @@ package ast;
 public class ClassDec extends Type {
    public ClassDec( String name ) {
       super(name);
+      this.name = name;
       instanceVariableList = new InstanceVariableList();
       publicMethodList = new MethodList();
       privateMethodList = new MethodList();

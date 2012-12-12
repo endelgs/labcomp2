@@ -56,7 +56,7 @@ public class Compiler {
   // falta o tratamento de variaveis e metodos estaticos
 
   // OK
-  private ClassDec classDec() {
+  private ClassDec classDec() { 
     // Note que os metodos desta classe nao correspondem exatamente as regras
     // da gramatica. Este metodo classDec, por exemplo, implementa
     // a producao ClassDec (veja abaixo) e partes de outras producoes.
@@ -130,43 +130,56 @@ public class Compiler {
       if (lexer.token != Symbol.IDENT) {
         error.show("Identifier expected");
       }
+      // Lendo o nome da variavel/metodo
       String name = lexer.getStringValue();
       lexer.nextToken();
+      
+      // Se for um "(", eh um metodo
       if (lexer.token == Symbol.LEFTPAR) {
         if (qualifier == Symbol.PUBLIC) {
           classDec.getPublicMethodList().addElement(methodDec(t, name, qualifier, isStatic));
-        } else {
+        } else if(qualifier == Symbol.PRIVATE) {
           classDec.getPrivateMethodList().addElement(methodDec(t, name, qualifier, isStatic));
+        }else{
+          error.show("Invalid qualifier '"+lexer.getStringValue()+"'. public/private expected");
         }
+      // Uma variavel de instancia nao pode ser publica
       } else if (qualifier != Symbol.PRIVATE) {
         error.show("Attempt to declare a public instance variable");
       } else { // faz a insercao direto na lista de variaveis 'por referencia'
         instanceVarDec(t, name, classDec.getInstanceVariableList(), isStatic);
       }
     }
+    //lexer.nextToken();
     if (lexer.token != Symbol.RIGHTCURBRACKET) {
-      error.show("public/private or \"}\" expected");
+      //error.show("public/private or \"}\" expected");
     }
-    lexer.nextToken();
+    
     return classDec;
   }
   // OK
 
   private void instanceVarDec(Type type, String name, InstanceVariableList instanceVariableList, boolean isStatic) {
     //   InstVarDec ::= [ "static"  ] "private"  Type  IdList  ";"
-
+    
+    // ao entrar nesse metodo, o programa ja analisou a primeira variavel da 
+    // sequencia de declaracoes
+    
+    // Caso haja mais de uma declaracao
     while (lexer.token == Symbol.COMMA) {
       lexer.nextToken();
       if (lexer.token != Symbol.IDENT) {
         error.show("Identifier expected");
       }
       String variableName = lexer.getStringValue();
-      instanceVariableList.addElement(new InstanceVariable(name, type, isStatic));
+      instanceVariableList.addElement(new InstanceVariable(variableName, type, isStatic));
       lexer.nextToken();
     }
+    // Termino das declaracoes
     if (lexer.token != Symbol.SEMICOLON) {
       error.show(CompilerError.semicolon_expected);
     }
+    // Ao sair do metodo, o token jah esta DEPOIS das declaracoes
     lexer.nextToken();
   }
 
@@ -175,28 +188,32 @@ public class Compiler {
     /*   MethodDec ::= Qualifier ReturnType Id "("[ FormalParamDec ]  ")"
      "{"  StatementList "}"
      */
+    // quando entra nesse metodo, ja ta no "("
     MethodDec methodDec = new MethodDec(name, type, qualifier, isStatic);
     currentMethod = methodDec;
-    lexer.nextToken();
+    lexer.nextToken(); // "parametros..."
     if (lexer.token != Symbol.RIGHTPAR) {
       methodDec.setParamList(formalParamDec());
     }
+    // ")"
     if (lexer.token != Symbol.RIGHTPAR) {
       error.show(") expected");
     }
-
-    lexer.nextToken();
+    
+    lexer.nextToken(); // "{"
     if (lexer.token != Symbol.LEFTCURBRACKET) {
       error.show("{ expected");
     }
 
-    lexer.nextToken();
+    lexer.nextToken(); // "statements..."
     methodDec.setStatementList(statementList());
+    // "}"
     lexer.nextToken();
     if (lexer.token != Symbol.RIGHTCURBRACKET) {
       error.show("} expected");
     }
-
+    // Ao sair desse metodo, o compilador ja terminou de analisar a declaracao
+    // do metodo e o cursor eh posicionada logo depois do ultimo "}"
     lexer.nextToken();
     return methodDec;
   }
@@ -1042,9 +1059,10 @@ public class Compiler {
               error.show("Class '"+variableName+"' doesn't exist");
             }
             variable = symbolTable.getInLocal(id);
-            if(variable == null){
-              error.show("Variable '"+id+"' doesn't exist");
+            if(variable != null){
+              error.show("Redeclaration of variable '"+id+"'");
             }
+            symbolTable.putInLocal(id, new Variable(id,aClass));
             // variableName must be the name of a class
             // replace null in the statement below by
             // a point to the class named variableName.
