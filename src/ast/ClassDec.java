@@ -4,11 +4,13 @@ public class ClassDec extends Type {
    public ClassDec( String name ) {
       super(name);
    }
+   
+   @Override
    public void genK(PW pw){
      pw.print("class "+name);
-     if(superclass != null)
+     if(superclass != null){
        pw.print(" extends "+superclass.getName());
-     
+     }
      // Imprimindo a lista de variaveis
      if(instanceVariableList != null){
       while(instanceVariableList.elements().hasNext()){
@@ -32,6 +34,8 @@ public class ClassDec extends Type {
      }
      pw.print("}");
    }
+   
+  @Override
    public String getCname() {
       return getName();
    }
@@ -68,7 +72,7 @@ public class ClassDec extends Type {
     MethodDec methodDec;
     while(publicMethodList.elements().hasNext()){
        methodDec = publicMethodList.elements().next();
-      if(methodDec.getName() == name){
+      if(methodDec.getName().compareTo(name) == 0){
         return methodDec;
       }
     }
@@ -78,7 +82,7 @@ public class ClassDec extends Type {
     InstanceVariable variable;
     while(instanceVariableList.elements().hasNext()){
        variable = instanceVariableList.elements().next();
-      if(variable.getName() == name){
+      if(variable.getName().compareTo(name) == 0){
         return variable;
       }
     }
