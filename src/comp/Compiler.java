@@ -134,6 +134,7 @@ public class Compiler {
       lexer.nextToken();
       if (lexer.token == Symbol.LEFTPAR) {
         if (qualifier == Symbol.PUBLIC) {
+          //TEM Q MUDAR ISSO, TA DANDO ERRO - addElement aparentemente nao funciona
           classDec.getPublicMethodList().addElement(methodDec(t, name, qualifier, isStatic));
         } else {
           classDec.getPrivateMethodList().addElement(methodDec(t, name, qualifier, isStatic));
@@ -161,6 +162,8 @@ public class Compiler {
         error.show("Identifier expected");
       }
       String variableName = lexer.getStringValue();
+      
+      //AQUI TB TA COM PROBLEMA, SE PA EH MELHOR TER UMA instanceVarDecList()
       instanceVariableList.addElement(new InstanceVariable(name, type, isStatic));
       lexer.nextToken();
     }
@@ -191,13 +194,17 @@ public class Compiler {
     }
 
     lexer.nextToken();
-    methodDec.setStatementList(statementList());
-    lexer.nextToken();
+    if(lexer.token != Symbol.RIGHTCURBRACKET){
+      methodDec.setStatementList(statementList());
+      lexer.nextToken();
+    }
+
     if (lexer.token != Symbol.RIGHTCURBRACKET) {
       error.show("} expected");
     }
 
     lexer.nextToken();
+    System.out.println(methodDec.getName());
     return methodDec;
   }
   // OK
