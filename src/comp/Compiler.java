@@ -18,7 +18,7 @@ public class Compiler {
 
 
     Program program = null;
-    try {
+    //try {
       lexer.nextToken();
       if (lexer.token == Symbol.EOF) {
         error.show("Unexpected end of file");
@@ -28,14 +28,14 @@ public class Compiler {
         program = null;
         error.show("End of file expected");
       }
-    } catch (Exception e) {
+    //} catch (Exception e) {
       // the below statement prints the stack of called methods.
       // of course, it should be removed if the compiler were
       // a production compiler.
 
       //e.printStackTrace();
-      program = null;
-    }
+      //program = null;
+    //}
 
     return program;
   }
@@ -134,7 +134,6 @@ public class Compiler {
       lexer.nextToken();
       if (lexer.token == Symbol.LEFTPAR) {
         if (qualifier == Symbol.PUBLIC) {
-          //TEM Q MUDAR ISSO, TA DANDO ERRO - addElement aparentemente nao funciona
           classDec.getPublicMethodList().addElement(methodDec(t, name, qualifier, isStatic));
         } else {
           classDec.getPrivateMethodList().addElement(methodDec(t, name, qualifier, isStatic));
@@ -162,8 +161,6 @@ public class Compiler {
         error.show("Identifier expected");
       }
       String variableName = lexer.getStringValue();
-      
-      //AQUI TB TA COM PROBLEMA, SE PA EH MELHOR TER UMA instanceVarDecList()
       instanceVariableList.addElement(new InstanceVariable(name, type, isStatic));
       lexer.nextToken();
     }
@@ -194,17 +191,13 @@ public class Compiler {
     }
 
     lexer.nextToken();
-    if(lexer.token != Symbol.RIGHTCURBRACKET){
-      methodDec.setStatementList(statementList());
-      lexer.nextToken();
-    }
-
+    methodDec.setStatementList(statementList());
+    lexer.nextToken();
     if (lexer.token != Symbol.RIGHTCURBRACKET) {
       error.show("} expected");
     }
 
     lexer.nextToken();
-    System.out.println(methodDec.getName());
     return methodDec;
   }
   // OK

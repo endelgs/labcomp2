@@ -10,6 +10,7 @@ public class Method {
         this.type = type;
         this.qualifier = qualifier;
         this.isStatic = isStatic;
+        this.statementList = new StatementList();
     }
     public void genK(PW pw){
       pw.print(name);
