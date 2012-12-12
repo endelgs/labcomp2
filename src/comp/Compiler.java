@@ -88,7 +88,7 @@ public class Compiler {
       }
       superclassName = lexer.getStringValue();
 
-      
+      lexer.nextToken();
     }
     //lexer.nextToken();
     if (lexer.token != Symbol.LEFTCURBRACKET) {
@@ -138,8 +138,10 @@ public class Compiler {
       if (lexer.token == Symbol.LEFTPAR) {
         if (qualifier == Symbol.PUBLIC) {
           classDec.getPublicMethodList().addElement(methodDec(t, name, qualifier, isStatic));
+          //lexer.nextToken();
         } else if(qualifier == Symbol.PRIVATE) {
           classDec.getPrivateMethodList().addElement(methodDec(t, name, qualifier, isStatic));
+          //lexer.nextToken();
         }else{
           error.show("Invalid qualifier '"+lexer.getStringValue()+"'. public/private expected");
         }
@@ -150,11 +152,11 @@ public class Compiler {
         instanceVarDec(t, name, classDec.getInstanceVariableList(), isStatic);
       }
     }
-    //lexer.nextToken();
-    if (lexer.token != Symbol.RIGHTCURBRACKET) {
-      //error.show("public/private or \"}\" expected");
-    }
     
+    if (lexer.token != Symbol.RIGHTCURBRACKET) {
+      error.show("public/private or \"}\" expected");
+    }
+    lexer.nextToken();
     return classDec;
   }
   // OK
@@ -208,7 +210,7 @@ public class Compiler {
     lexer.nextToken(); // "statements..."
     methodDec.setStatementList(statementList());
     // "}"
-    lexer.nextToken();
+    //lexer.nextToken();
     if (lexer.token != Symbol.RIGHTCURBRACKET) {
       error.show("} expected");
     }
@@ -321,6 +323,7 @@ public class Compiler {
             && tk != Symbol.ELSE) {
       statementList.add(statement());
     }
+    //lexer.nextToken();
     return statementList;
   }
   // OK
