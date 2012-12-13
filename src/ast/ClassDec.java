@@ -72,9 +72,9 @@ public class ClassDec extends Type {
   }
   public InstanceVariable getVariable(String name){
     InstanceVariable variable;
-    while(instanceVariableList.elements().hasNext()){
-       variable = instanceVariableList.elements().next();
-      if(variable.getName() == name){
+    for(int i = 0; i < instanceVariableList.getSize(); i++){
+       variable = instanceVariableList.get(i);
+      if(variable.getName().equals(name)){
         return variable;
       }
     }

@@ -15,7 +15,9 @@ public class ParamList {
     public Iterator<Parameter> elements() {
         return paramList.iterator();
     }
-
+    public Parameter get(int i){
+      return paramList.get(i);
+    }
     public int getSize() {
         return paramList.size();
     }

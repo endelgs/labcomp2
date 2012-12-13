@@ -7,7 +7,9 @@ public class InstanceVariableList extends MemberList{
     public InstanceVariableList() {
        instanceVariableList = new ArrayList<InstanceVariable>();
     }
-
+    public InstanceVariable get(int i){
+      return instanceVariableList.get(i);
+    }
     public void addElement(InstanceVariable instanceVariable) {
        instanceVariableList.add( instanceVariable );
     }
