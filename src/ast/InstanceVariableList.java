@@ -15,7 +15,7 @@ public class InstanceVariableList extends MemberList{
     public Iterator<InstanceVariable> elements() {
     	return this.instanceVariableList.iterator();
     }
-
+ 
     public int getSize() {
         return instanceVariableList.size();
     }

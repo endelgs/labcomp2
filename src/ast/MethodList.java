@@ -15,14 +15,16 @@ public class MethodList extends MemberList{
     public Iterator<MethodDec> elements() {
     	return this.methodList.iterator();
     }
-
+    public MethodDec get(int i){
+      return methodList.get(i);
+    }
     public int getSize() {
         return methodList.size();
     }
     public void genK(PW pw){
       if(methodList != null){
-        while(methodList.iterator().hasNext())
-          methodList.iterator().next().genK(pw);
+        for(int i = 0; i< methodList.size(); i++)
+          methodList.get(i).genK(pw);
       }
     }
     private ArrayList<MethodDec> methodList;

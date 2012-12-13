@@ -13,8 +13,9 @@ abstract class MessageSend  extends Expr  {
     pw.print(".");
     pw.print(method.getName());
     pw.print("(");
-    exprList.genK(pw);
-    pw.print(")");
+    if(exprList != null)
+      exprList.genK(pw);
+    pw.println(")");
   }
   public ExprList getExprList() {
     return exprList;
@@ -41,8 +42,8 @@ abstract class MessageSend  extends Expr  {
   }
 
   
-  private ExprList exprList;
-  private Variable variable;
-  private MethodDec method;
+  protected ExprList exprList;
+  protected Variable variable;
+  protected MethodDec method;
 }
 

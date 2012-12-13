@@ -44,7 +44,7 @@ public class Compiler {
   private Program program() {
     // Program ::=  ClassDec { ClassDec }
     ArrayList<ClassDec> classDecs = new ArrayList<ClassDec>();
-    classDecs.add(classDec());
+    //classDecs.add(classDec());
     while (lexer.token == Symbol.CLASS) {
       // mutreta do zeh. nao sei se funfa por causa da passagem por referencia
       currentClass = classDec();
@@ -210,7 +210,6 @@ public class Compiler {
     lexer.nextToken(); // "statements..."
     methodDec.setStatementList(statementList());
     // "}"
-    //lexer.nextToken();
     if (lexer.token != Symbol.RIGHTCURBRACKET) {
       error.show("} expected");
     }
@@ -236,7 +235,7 @@ public class Compiler {
         error.show("Identifier expected");
       }
       localVarList.addElement(new Variable(lexer.getStringValue(), type));
-      lexer.nextToken();
+      //lexer.nextToken();
     }
     return localVarList;
   }
@@ -302,12 +301,13 @@ public class Compiler {
   // OK
 
   private CompositeStatement compositeStatement() {
-
+    // Quando entra nesse metodo, o token eh "{"
     lexer.nextToken();
     CompositeStatement compositeStatement = new CompositeStatement(statementList());
     if (lexer.token != Symbol.RIGHTCURBRACKET) {
       error.show("} expected");
     } else {
+      // Ao sair do metodo, o token esta em "}" e deve avancar
       lexer.nextToken();
     }
     return compositeStatement;
@@ -323,7 +323,7 @@ public class Compiler {
             && tk != Symbol.ELSE) {
       statementList.add(statement());
     }
-    //lexer.nextToken();
+//    lexer.nextToken();
     return statementList;
   }
   // OK
@@ -341,6 +341,7 @@ public class Compiler {
       case IDENT:
       case SUPER:
         statement = assignmentMessageSendLocalVarDecStatement();
+        //lexer.nextToken();
         break;
       case INT:
         lexer.nextToken();
@@ -1071,6 +1072,7 @@ public class Compiler {
             // a point to the class named variableName.
             // A search in the symbol table is necessary.
             result = localDec(aClass);
+            //lexer.nextToken();
             break;
           case DOT:
             // id.id()
@@ -1078,7 +1080,7 @@ public class Compiler {
             methodName = lexer.getStringValue();
             lexer.nextToken();
             exprList = getRealParameters();
-            
+            //lexer.nextToken();
             // verificando se a variavel existe
             variable = symbolTable.getInLocal(variableName);
             if(variable == null)
@@ -1090,7 +1092,7 @@ public class Compiler {
               error.show("Call to undefined method '"+methodName+"'");
             
             // comparando os parametros
-            paramCompare(aMethod, exprList);
+            //paramCompare(aMethod, exprList);
             result = new MessageSendStatement(
              new MessageSendToVariable( variable,
              aMethod, exprList ) );
@@ -1102,10 +1104,11 @@ public class Compiler {
       default:
         error.show("'this', 'super', basic type or identifier expected");
     }
+
     if (lexer.token != Symbol.SEMICOLON) {
       error.show(CompilerError.semicolon_expected);
     }
-    lexer.nextToken();
+    //lexer.nextToken();
     return result;
   }
 

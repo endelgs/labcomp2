@@ -4,7 +4,6 @@ public class MessageSendToVariable extends MessageSend {
 
   public MessageSendToVariable(Variable variable, MethodDec method, ExprList exprList) {
     super(variable, method, exprList);
-    this.variable = variable;
   }
 
   public Type getType() {
@@ -19,5 +18,4 @@ public class MessageSendToVariable extends MessageSend {
       getExprList().genK(pw);
       pw.print(")");
   }
-  private Variable variable;
 }

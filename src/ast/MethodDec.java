@@ -8,6 +8,7 @@ public class MethodDec extends Method {
         super(name, type, qualifier, isStatic);
     }
     public void genK(PW pw){
+      pw.printIdent("");
       // Imprimindo os qualificadores de escopo (static/private/public)
       if(isIsStatic()){
         pw.print("static ");
@@ -24,14 +25,14 @@ public class MethodDec extends Method {
       pw.print("(");
       if(getParamList() != null)
         getParamList().genK(pw);
-      pw.print("){");
+      pw.println("){");
       if(getStatementList() != null){
-        while(getStatementList().iterator().hasNext()){
-         Statement statement = getStatementList().iterator().next();
+        for(int i = 0; i< getStatementList().size(); i++){
+         Statement statement = getStatementList().get(i);
          statement.genK(pw);
         }
       }
-      pw.print("}");
+      pw.printIdent("}\n");
     }
 
 }

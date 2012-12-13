@@ -19,7 +19,7 @@ public class ReadStatement extends Statement{
     pw.print("read (");
     for(int i = 0; i< variableList.size(); i++)
       variableList.get(i).genK(pw);
-    pw.print(")");
+    pw.print(");");
   }
 
   public ArrayList<Variable> getVariableList() {

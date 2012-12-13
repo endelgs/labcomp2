@@ -12,27 +12,19 @@ public class ClassDec extends Type {
      pw.print("class "+name);
      if(superclass != null)
        pw.print(" extends "+superclass.getName());
-     
+     pw.println("{");
+     pw.currentIndent = 1;
      // Imprimindo a lista de variaveis
      if(instanceVariableList != null){
-      while(instanceVariableList.elements().hasNext()){
-        InstanceVariable i = instanceVariableList.elements().next();
-        i.genK(pw);
-      }
+        instanceVariableList.genK(pw);
      }
      // Imprimindo a lista de metodos publicos
      if(publicMethodList != null){
-      while(publicMethodList.elements().hasNext()){
-        MethodDec i = publicMethodList.elements().next();
-        i.genK(pw);
-      }
+        publicMethodList.genK(pw);
      }
      // Imprimindo a lista de metodos privados
      if(privateMethodList != null){
-      while(privateMethodList.elements().hasNext()){
-        MethodDec i = privateMethodList.elements().next();
-        i.genK(pw);
-      }
+      privateMethodList.genK(pw);
      }
      pw.print("}");
    }
@@ -70,9 +62,9 @@ public class ClassDec extends Type {
   }
   public MethodDec getMethod(String name){
     MethodDec methodDec;
-    while(publicMethodList.elements().hasNext()){
-       methodDec = publicMethodList.elements().next();
-      if(methodDec.getName() == name){
+    for(int i = 0; i < publicMethodList.getSize();i++){
+       methodDec = publicMethodList.get(i);
+      if(methodDec.getName().equals(name)){
         return methodDec;
       }
     }

@@ -12,7 +12,9 @@ public class WriteStatement extends Statement{
 
   @Override
   public void genK(PW pw) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    pw.print("write(");
+    exprList.genK(pw);
+    pw.println(");");
   }
 
   public ExprList getExprList() {

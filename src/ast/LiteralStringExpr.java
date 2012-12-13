@@ -7,7 +7,7 @@ public class LiteralStringExpr extends Expr {
     }
     
     public void genK( PW pw, boolean putParenthesis ) {
-        pw.print(literalString);
+        pw.print("\""+literalString+"\"");
     }
     
     public Type getType() {
