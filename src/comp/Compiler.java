@@ -869,11 +869,11 @@ public class Compiler {
     }
 
     // SEM - comparando o TIPO dos parametros
-    while (exprList.elements().hasNext()) {
-      Variable expParam = aMethod.getParamList().elements().next();
-      Expr pasParam = exprList.elements().next();
+    for (int i = 0; i< exprList.getSize(); i++) {
+      Variable expParam = aMethod.getParamList().get(i);
+      Expr pasParam = exprList.getElement(i);
       // verifico se o nome dos tipos eh igual
-      if (expParam.getType().getName() != pasParam.getType().getName()) {
+      if (!expParam.getType().getName().equals(pasParam.getType().getName())) {
         error.show("Param type mismatch: '" + expParam.getType().getName() + "' expected. '" + pasParam.getType().getName() + "' given.");
       }
     }
