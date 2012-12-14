@@ -13,7 +13,14 @@ public class InstanceVariableList extends MemberList{
     public void addElement(InstanceVariable instanceVariable) {
        instanceVariableList.add( instanceVariable );
     }
-
+    public InstanceVariable searchVariable(String name){
+      InstanceVariable v = null;
+      for(int i = 0; i< instanceVariableList.size(); i++){
+        if(instanceVariableList.get(i).equals(name))
+          return instanceVariableList.get(i);
+      }
+      return v;
+    }
     public Iterator<InstanceVariable> elements() {
     	return this.instanceVariableList.iterator();
     }

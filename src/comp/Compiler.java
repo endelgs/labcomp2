@@ -47,8 +47,8 @@ public class Compiler {
     //classDecs.add(classDec());
     while (lexer.token == Symbol.CLASS) {
       // mutreta do zeh. nao sei se funfa por causa da passagem por referencia
-      currentClass = classDec();
-      classDecs.add(currentClass);
+      //currentClass = ;
+      classDecs.add(classDec());
     }
     return new Program(classDecs);
   }
@@ -96,6 +96,7 @@ public class Compiler {
     }
     lexer.nextToken();
     ClassDec classDec = new ClassDec(className);
+    currentClass = classDec;
     symbolTable.putInGlobal(className, classDec);
     
     if (superclassName != null) {
@@ -216,6 +217,7 @@ public class Compiler {
     // Ao sair desse metodo, o compilador ja terminou de analisar a declaracao
     // do metodo e o cursor eh posicionada logo depois do ultimo "}"
     lexer.nextToken();
+    symbolTable.removeLocalIdent();
     return methodDec;
   }
   // OK
@@ -228,6 +230,7 @@ public class Compiler {
       error.show("Identifier expected");
     }
     localVarList.addElement(new Variable(lexer.getStringValue(), type));
+    symbolTable.putInLocal(lexer.getStringValue(), new Variable(lexer.getStringValue(),type));
     lexer.nextToken();
     while (lexer.token == Symbol.COMMA) {
       lexer.nextToken();
@@ -235,7 +238,8 @@ public class Compiler {
         error.show("Identifier expected");
       }
       localVarList.addElement(new Variable(lexer.getStringValue(), type));
-      //lexer.nextToken();
+      symbolTable.putInLocal(lexer.getStringValue(), new Variable(lexer.getStringValue(),type));
+      lexer.nextToken();
     }
     return localVarList;
   }
@@ -262,7 +266,9 @@ public class Compiler {
     }
     String name = lexer.getStringValue();
     lexer.nextToken();
-    return new Parameter(name, type);
+    Parameter p = new Parameter(name, type);
+    symbolTable.putInLocal(name, p);
+    return p;
   }
 
   // OK
