@@ -61,12 +61,26 @@ public class ClassDec extends Type {
     this.privateMethodList = privateMethodList;
   }
   public MethodDec getMethod(String name){
+    return this.getMethod(name,false);
+  }
+  public MethodDec getMethod(String name, boolean includePrivateMethods){
     MethodDec methodDec;
     for(int i = 0; i < publicMethodList.getSize();i++){
-       methodDec = publicMethodList.get(i);
+      methodDec = publicMethodList.get(i);
       if(methodDec.getName().equals(name)){
         return methodDec;
       }
+    }
+    if(includePrivateMethods){
+      for(int i = 0; i < privateMethodList.getSize();i++){
+       methodDec = privateMethodList.get(i);
+        if(methodDec.getName().equals(name)){
+          return methodDec;
+        }
+      }
+    }
+    if(superclass != null){
+      return superclass.getMethod(name);
     }
     return null;
   }
@@ -79,6 +93,13 @@ public class ClassDec extends Type {
       }
     }
     return null;
+  }
+  public boolean isChildOf(String name){
+    if(this.name.equals(name))
+      return true;
+    if(superclass == null)
+      return false;
+    return superclass.isChildOf(name);
   }
   private String name;
   private ClassDec superclass;

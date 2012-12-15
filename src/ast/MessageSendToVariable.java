@@ -15,7 +15,8 @@ public class MessageSendToVariable extends MessageSend {
       pw.print(".");
       pw.print(getMethod().getName());
       pw.print("(");
-      getExprList().genK(pw);
+      if(getExprList() != null)
+        getExprList().genK(pw);
       pw.print(")");
   }
 }

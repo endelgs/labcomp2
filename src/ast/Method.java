@@ -11,6 +11,7 @@ public class Method {
         this.qualifier = qualifier;
         this.isStatic = isStatic;
         this.statementList = new StatementList();
+        this.paramList = new ParamList();
     }
     public void genK(PW pw){
       pw.print(name);

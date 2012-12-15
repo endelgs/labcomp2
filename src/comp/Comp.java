@@ -118,15 +118,14 @@ public class Comp {
                PW pw = new PW();
                pw.set(printWriter);
                program.genK(pw);
-               System.out.println("oi");
                //program.genHTML( pw );
                if ( printWriter.checkError() ) {
                   System.out.println("There was an error in the output");
                }
-               //outError.println("0");
+               outError.println("0");
             }else{
             }
-            //   outError.println("0");
+               outError.println("0");
             printWriter.close();
             outError.close();
         }

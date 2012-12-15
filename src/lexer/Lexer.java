@@ -2,7 +2,7 @@ package lexer;
 
 import java.util.*;
 
-import comp.*;
+import comp.*; 
 
 public class Lexer {
 
