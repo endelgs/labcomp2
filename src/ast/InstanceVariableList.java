@@ -16,7 +16,7 @@ public class InstanceVariableList extends MemberList{
     public InstanceVariable searchVariable(String name){
       InstanceVariable v = null;
       for(int i = 0; i< instanceVariableList.size(); i++){
-        if(instanceVariableList.get(i).equals(name))
+        if(instanceVariableList.get(i).getName().equals(name))
           return instanceVariableList.get(i);
       }
       return v;

@@ -1,6 +1,7 @@
 package comp;
 
 import ast.*;
+import java.awt.print.Book;
 import lexer.*;
 import java.io.*;
 import java.util.*;
@@ -90,6 +91,8 @@ public class Compiler {
 
       lexer.nextToken();
     }
+    if(className.equals(superclassName))
+      error.show("Class '"+className+"' cannot inherit from itself");
     //lexer.nextToken();
     if (lexer.token != Symbol.LEFTCURBRACKET) {
       error.show("{ expected", true);
@@ -173,6 +176,10 @@ public class Compiler {
     // sequencia de declaracoes
     
     String variableName = lexer.getStringValue();
+    InstanceVariable iv = instanceVariableList.searchVariable(variableName);
+    if(iv != null){
+      error.show("Redeclaration of instance variable '"+variableName+"'");
+    }
     instanceVariableList.addElement(new InstanceVariable(variableName, type, isStatic));
     
     // Caso haja mais de uma declaracao
@@ -182,6 +189,9 @@ public class Compiler {
         error.show("Identifier expected");
       }
       variableName = lexer.getStringValue();
+      iv = instanceVariableList.searchVariable(variableName);
+
+        error.show("Redeclaration of instance variable '"+variableName+"'");
       instanceVariableList.addElement(new InstanceVariable(variableName, type, isStatic));
       lexer.nextToken();
     }
@@ -200,11 +210,24 @@ public class Compiler {
      */
     // quando entra nesse metodo, ja ta no "("
     MethodDec methodDec = new MethodDec(name, type, qualifier, isStatic);
+    MethodDec aMethod = null;
     currentMethod = methodDec;
+    if(currentClass.getVariable(name)!= null){
+      error.show("Redeclaration of member '"+name+"'");
+    }
+    // Verificando polimorfismo por sobreposicao
+     aMethod = currentClass.checkOverrideMethod(name);
+    if( aMethod != null && // metodo existe
+        !methodDec.getType().equals(aMethod.getType()))
+      error.show("Cannot override method. Superclass' method '"+aMethod.getName()
+              +"' has return type '"+aMethod.getType().getName()
+              +"' and redefined as '"+methodDec.getType().getName()+"'");
+    
     lexer.nextToken(); // "parametros..."
     if (lexer.token != Symbol.RIGHTPAR) {
       methodDec.setParamList(formalParamDec());
     }
+
     // ")"
     if (lexer.token != Symbol.RIGHTPAR) {
       error.show(") expected");
@@ -217,6 +240,12 @@ public class Compiler {
 
     lexer.nextToken(); // "statements..."
     methodDec.setStatementList(statementList());
+    
+    // Verificando se metodos nao-void tem return
+    if(!(type instanceof VoidType) && returnStatement == null)
+      error.show("metodo com tipo de retorno deve ter pelo menos um comando return");
+    returnStatement = null;
+    
     // "}"
     if (lexer.token != Symbol.RIGHTCURBRACKET) {
       error.show("} expected");
@@ -225,10 +254,7 @@ public class Compiler {
     // do metodo e o cursor eh posicionada logo depois do ultimo "}"
     lexer.nextToken();
     symbolTable.removeLocalIdent();
-    // Verificando se metodos nao-void tem return
-    if(!(type instanceof VoidType) && returnStatement == null)
-      error.show("metodo com tipo de retorno deve ter pelo menos um comando return");
-    returnStatement = null;
+    
     
     return methodDec;
   }
@@ -257,11 +283,13 @@ public class Compiler {
         error.show("Identifier expected");
       }
       if(symbolTable.getInLocal(lexer.getStringValue()) != null)
-        error.show("Redeclaracao de i em duas declaracoes em sequencia.");
+        error.show("Redeclaration of variable '"+lexer.getStringValue()+"'");
       localVarList.addElement(new Variable(lexer.getStringValue(), type));
       symbolTable.putInLocal(lexer.getStringValue(), new Variable(lexer.getStringValue(),type));
       lexer.nextToken();
     }
+    if(lexer.token != Symbol.SEMICOLON)
+      error.show("';' expected");
     return localVarList;
   }
   // OK
@@ -435,18 +463,26 @@ public class Compiler {
   private WhileStatement whileStatement() {
 
     WhileStatement whileStatement = new WhileStatement();
-
+    currentStatement = whileStatement;
+    
     lexer.nextToken();
     if (lexer.token != Symbol.LEFTPAR) {
       error.show("( expected");
     }
     lexer.nextToken();
-    whileStatement.setExpr(expr());
+    
+    // Verifico se a expressao do while eh booleana
+    Expr expr = expr();
+    if(!(expr instanceof BooleanExpr))
+      error.show("While expression must be boolean");
+    
+    whileStatement.setExpr(expr);
     if (lexer.token != Symbol.RIGHTPAR) {
       error.show(") expected");
     }
     lexer.nextToken();
     whileStatement.setStatement(statement());
+    currentStatement = null;
     return whileStatement;
   }
   // OK
@@ -505,7 +541,15 @@ public class Compiler {
       }
 
       String name = (String) lexer.getStringValue();
-      readStatement.getVariableList().add(new Variable(name, Type.intType)); // precisa verificar esse intType depois
+      Variable v = symbolTable.getInLocal(name);
+      if(v.getType() instanceof ClassDec){
+        error.show("Cannot read to an object");
+      }
+      // Nao pode ler pra dentro de variaveis boolean
+      if(v.getType() instanceof BooleanType)
+        error.show("Cannot read to a boolean variable");
+      
+      readStatement.getVariableList().add(v); // precisa verificar esse intType depois
 
       lexer.nextToken();
       if (lexer.token == Symbol.COMMA) {
@@ -529,7 +573,7 @@ public class Compiler {
 
   private WriteStatement writeStatement() {
     WriteStatement writeStatement = new WriteStatement();
-
+    currentStatement = writeStatement;
     lexer.nextToken();
     if (lexer.token != Symbol.LEFTPAR) {
       error.show("( expected");
@@ -550,6 +594,9 @@ public class Compiler {
 
   private BreakStatement breakStatement() {
     BreakStatement breakStatement = new BreakStatement();
+    // Verificando se o break esta dentro de um while
+    if(!(currentStatement instanceof BreakStatement))
+      error.show("Break statement must be within a while statement");
     lexer.nextToken();
     if (lexer.token != Symbol.SEMICOLON) {
       error.show(CompilerError.semicolon_expected);
@@ -570,10 +617,24 @@ public class Compiler {
 
 
     ExprList anExprList = new ExprList();
-    anExprList.addElement(expr());
+    Expr expr = expr();
+    if(expr.getType() instanceof ClassDec){
+      if(currentStatement instanceof ReadStatement)
+        error.show("Cannot read to an object");
+      if(currentStatement instanceof WriteStatement)
+        error.show("Cannot write to an object");
+    }
+    anExprList.addElement(expr);
     while (lexer.token == Symbol.COMMA) {
       lexer.nextToken();
-      anExprList.addElement(expr());
+      expr = expr();
+      if(expr.getType() instanceof ClassDec){
+      if(currentStatement instanceof ReadStatement)
+        error.show("Cannot read to an object");
+      if(currentStatement instanceof WriteStatement)
+        error.show("Cannot write to an object");
+    }
+      anExprList.addElement(expr);
     }
     return anExprList;
   }
@@ -602,6 +663,10 @@ public class Compiler {
             || op == Symbol.OR) {
       lexer.nextToken();
       Expr right = term();
+      if(op == Symbol.MINUS || op == Symbol.PLUS)
+        if(!(right.getType() instanceof IntType && left.getType() instanceof IntType))
+          error.show("Operator '"+op+"' cannot be applied to given types");
+
       left = new CompositeExpr(left, op, right);
     }
     return left;
@@ -616,6 +681,9 @@ public class Compiler {
             || op == Symbol.AND) {
       lexer.nextToken();
       Expr right = signalFactor();
+      // Verificando se os operadores sao validos
+      if(op != Symbol.AND && !(right.getType() instanceof IntType && left.getType() instanceof IntType))
+        error.show("Operator '"+op+"' cannot be applied to given types");
       left = new CompositeExpr(left, op, right);
     }
     return left;
@@ -626,7 +694,11 @@ public class Compiler {
     Symbol op;
     if ((op = lexer.token) == Symbol.PLUS || op == Symbol.MINUS) {
       lexer.nextToken();
-      return new SignalExpr(op, factor());
+      Expr factor = factor();
+      if(!(factor instanceof NumberExpr) && 
+         !(factor instanceof VariableExpr && factor.getType() instanceof IntType))
+        error.show("Operator '"+op+"' cannot be applied to '"+factor.getType().getName()+"'");
+      return new SignalExpr(op, factor);
     } else {
       return factor();
     }
@@ -655,6 +727,8 @@ public class Compiler {
       case NOT:
         lexer.nextToken();
         e = expr();
+        if(!(e.getType() instanceof BooleanType))
+          error.show("Operator '"+Symbol.NOT+"' cannot be applied to '"+e.getType().getName()+"'");
         return new UnaryExpr(e, Symbol.NOT);
       case LITERALSTRING:
         String literalString = lexer.getLiteralStringValue();
@@ -1065,7 +1139,7 @@ public class Compiler {
         exprList = getRealParameters();
         aClass = currentClass.getSuperclass();
         if (aClass == null) {
-          error.show("Class " + aClass.getName() + " doesn't have a superclass");
+          error.show("Class " + currentClass.getName() + " doesn't have a superclass");
         }
         aMethod = aClass.getMethod(methodName);
         if (aMethod == null) {
@@ -1185,4 +1259,5 @@ public class Compiler {
   private ClassDec currentClass;
   private MethodDec currentMethod;
   private ReturnStatement returnStatement = null;
+  private Statement currentStatement = null;
 }

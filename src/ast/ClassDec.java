@@ -63,6 +63,16 @@ public class ClassDec extends Type {
   public MethodDec getMethod(String name){
     return this.getMethod(name,false);
   }
+  public MethodDec checkOverrideMethod(String name){
+    MethodDec m = null;
+    if(superclass == null)
+      m = getMethod(name);
+    if(superclass != null)
+      return superclass.checkOverrideMethod(name);
+    
+    
+    return m;
+  }
   public MethodDec getMethod(String name, boolean includePrivateMethods){
     MethodDec methodDec;
     for(int i = 0; i < publicMethodList.getSize();i++){
