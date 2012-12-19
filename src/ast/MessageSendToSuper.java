@@ -8,14 +8,15 @@ public class MessageSendToSuper extends MessageSend {
   }
 
     public Type getType() { 
-        return null;
+        return getMethod().getType();
     }
 
     public void genK( PW pw, boolean putParenthesis ) {
       pw.print("super.");
       pw.print(getMethod().getName());
       pw.print("(");
-      getExprList().genK(pw);
+      if(getExprList() != null)
+        getExprList().genK(pw);
       pw.print(")");
     }
     private ClassDec superclass;

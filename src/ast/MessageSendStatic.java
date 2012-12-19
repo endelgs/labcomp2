@@ -24,7 +24,7 @@ public class MessageSendStatic extends MessageSend{
 
   @Override
   public Type getType() {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return getMethod().getType();
   }
   
 }

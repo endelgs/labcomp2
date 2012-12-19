@@ -16,7 +16,7 @@ public class MethodDec extends Method {
       pw.print(getQualifier().toString()+" ");
       
       // Imprimindo o tipo de retorno
-      getType().genK(pw);
+      pw.print(getType().getName()+" ");
       
       // Imprimindo o nome do metodo
       super.genK(pw);

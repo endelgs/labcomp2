@@ -7,7 +7,7 @@ public class MessageSendToVariable extends MessageSend {
   }
 
   public Type getType() {
-    return null;
+    return getMethod().getType();
   }
 
   public void genK(PW pw, boolean putParenthesis) {

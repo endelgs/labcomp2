@@ -1,7 +1,6 @@
 package comp;
 
 import ast.*;
-import java.awt.print.Book;
 import lexer.*;
 import java.io.*;
 import java.util.*;
@@ -212,23 +211,28 @@ public class Compiler {
     MethodDec methodDec = new MethodDec(name, type, qualifier, isStatic);
     MethodDec aMethod = null;
     currentMethod = methodDec;
+    lexer.nextToken(); // "parametros..."
+    if (lexer.token != Symbol.RIGHTPAR) {
+      methodDec.setParamList(formalParamDec());
+      //signatureCompare(methodDec,aMethod);
+    }
     if(currentClass.getVariable(name)!= null){
       error.show("Redeclaration of member '"+name+"'");
     }
     // Verificando polimorfismo por sobreposicao
     aMethod = currentClass.checkOverrideMethod(name);
-    if( aMethod != null && // metodo existe
-        !methodDec.getType().equals(aMethod.getType()))
+    if( aMethod != null){ // metodo existe
+        if(!methodDec.getType().equals(aMethod.getType()))
       error.show("Cannot override method. Superclass' method '"+aMethod.getName()
               +"' has return type '"+aMethod.getType().getName()
               +"' and redefined as '"+methodDec.getType().getName()+"'");
+        // Comparando as assinaturas dos metodos
+        signatureCompare(aMethod, methodDec);
+    }
     aMethod = currentClass.getMethod(name,true,false);
     if(aMethod != null)
       error.show("Redeclaration of method '"+name+"'");
-    lexer.nextToken(); // "parametros..."
-    if (lexer.token != Symbol.RIGHTPAR) {
-      methodDec.setParamList(formalParamDec());
-    }
+    
 
     // ")"
     if (lexer.token != Symbol.RIGHTPAR) {
@@ -519,7 +523,20 @@ public class Compiler {
     ReturnStatement returnStatement = new ReturnStatement();
     this.returnStatement = returnStatement;
     lexer.nextToken();
-    returnStatement.setExpr(expr());
+    Expr expr = expr();
+    // Verificando se o tipo de retorno do metodo bate com a expressao retornada
+    // CASO 1: tipos primitivos
+    if(expr.getType() instanceof IntType || expr.getType() instanceof BooleanType || expr.getType() instanceof StringType){
+      if(!expr.getType().equals(currentMethod.getType())){
+        error.show("Type mismatch. Expecting return type to be '"+currentMethod.getType().getName()+
+              "' or one of its subclasses. '"+expr.getType().getName()+"' given");
+      }
+    // CASO 2: tipos complexos
+    }else if(!((ClassDec)expr.getType()).isChildOf(currentMethod.getType().getName())){
+      error.show("Type mismatch. Expecting return type to be '"+currentMethod.getType().getName()+
+              "' or one of its subclasses. '"+expr.getType().getName()+"' given");
+    }
+    returnStatement.setExpr(expr);
     if (lexer.token != Symbol.SEMICOLON) {
       error.show(CompilerError.semicolon_expected);
     }
@@ -550,6 +567,12 @@ public class Compiler {
 
       String name = (String) lexer.getStringValue();
       Variable v = symbolTable.getInLocal(name);
+      if(v == null){
+        v = currentClass.getVariable(name);
+        if(v == null){
+          error.show("Undefined variable '"+name+"'");
+        }
+      }
       if(v.getType() instanceof ClassDec){
         error.show("Cannot read to an object");
       }
@@ -611,7 +634,7 @@ public class Compiler {
   private BreakStatement breakStatement() {
     BreakStatement breakStatement = new BreakStatement();
     // Verificando se o break esta dentro de um while
-    if(whileStack.firstElement() == null)
+    if(whileStack.empty())
       error.show("Break statement must be within a while statement");
     lexer.nextToken();
     if (lexer.token != Symbol.SEMICOLON) {
@@ -638,7 +661,7 @@ public class Compiler {
       if(currentStatement instanceof ReadStatement)
         error.show("Cannot read to an object");
       if(currentStatement instanceof WriteStatement)
-        error.show("Cannot write to an object");
+        error.show("Cannot write an object");
     }
     
     anExprList.addElement(expr);
@@ -666,6 +689,14 @@ public class Compiler {
             || op == Symbol.GE || op == Symbol.GT) {
       lexer.nextToken();
       Expr right = simpleExpr();
+      if(right.getType() instanceof ClassDec || left.getType() instanceof ClassDec){
+        if(!((right.getType() instanceof ClassDec && left.getType() instanceof UndefinedType)
+         || (left.getType() instanceof ClassDec && right.getType() instanceof UndefinedType))){
+
+        error.show("Cannot apply operator '"+op+"' to pointers");
+        }
+      }
+      
       left = new CompositeExpr(left, op, right);
     }
     op = lexer.token;
@@ -974,12 +1005,12 @@ public class Compiler {
                     // nesta linha, verifique se methodName e um metodo estatico da
                     // classe aClass que pode aceitar como parmetros as expressoes 
                     // de exprList.Algo como (apenas o inicio):
-                    aMethod = aClass.getMethod(methodName);
+                    aMethod = aClass.getMethod(methodName,true,true);
                     if (aMethod.isIsStatic()) {
                       // Checando os parametros
                       paramCompare(aMethod, exprList);
                     }
-                    return new MessageSendStatic(new Variable("", aClass), aMethod, exprList);
+                    return new MessageSendStatic(aVariable, aMethod, exprList);
                   }
                 default:
                   error.show(CompilerError.ident_expected);
@@ -993,7 +1024,16 @@ public class Compiler {
     }
 
   }
-
+  private void signatureCompare(Method oldMethod, Method newMethod){
+    if(oldMethod.getParamList().getSize() != newMethod.getParamList().getSize()){
+      error.show("Cannot redefine method. Param count doesn't match with superclass");
+    }
+    for(int i = 0; i < oldMethod.getParamList().getSize(); i++){
+      if(!oldMethod.getParamList().get(i).getType().getName().equals(newMethod.getParamList().get(i).getType().getName())){
+        error.show("Cannot redefine method. Parameters don't match");
+      }
+    }
+  }
   private void paramCompare(Method aMethod, ExprList exprList) {
     // Se o metodo nao tiver parametros E nao houver parametros a serem passados
     // simplesmente retorno
@@ -1012,7 +1052,7 @@ public class Compiler {
       Variable expParam = aMethod.getParamList().get(i);
       Expr pasParam = exprList.getElement(i);
       // verifico se os parametros sao do mesmo tipo ou se tem a mesma heranca
-      if (!(pasParam.getType() instanceof IntType) &&
+      if ((pasParam.getType() instanceof ClassDec) &&
           !((ClassDec)pasParam.getType()).isChildOf(expParam.getType().getName())) {
         error.show("Param type mismatch: '" + expParam.getType().getName() + "' expected. '" + pasParam.getType().getName() + "' given.");
       }
@@ -1174,7 +1214,7 @@ public class Compiler {
         }
         aMethod = aClass.getMethod(methodName);
         if (aMethod == null) {
-          error.show("Class " + aClass.getName() + " doesn't have a method called " + methodName);
+            error.show("Attempted to call undefined method "+aClass.getName()+"::" + methodName);          
         }
         paramCompare(aMethod, exprList);
         result = new MessageSendStatement(new MessageSendToSuper(new Variable("super", aClass), aMethod, exprList, aClass));
@@ -1202,20 +1242,27 @@ public class Compiler {
               error.show("Cannot assign value of primitive type '"+anExpr.getType().getName()
                       +"' to '"+variable.getType().getName()+"'");
             }
-            if(anExpr.getType() instanceof BooleanType){
-              if(!(variable.getType() instanceof BooleanType))
+            // Verificando se nao eh expressao do tipo null
+            if(!(anExpr.getType() instanceof UndefinedType)){
+              // Verificando tipos primitivos
+              if(anExpr.getType() instanceof StringType){
+                
+              }else if(anExpr.getType() instanceof VoidType){
+                if(currentAssignment != null){
+                  error.show("Cannot assign to '"+variableName+"': method returns void.");
+                }
+              }else if(anExpr.getType() instanceof BooleanType){
+                if(!(variable.getType() instanceof BooleanType)){
+                  error.show("Type mismatch: tried to assign '"+anExpr.getType().getName()
+                        +"' to '"+variable.getType().getName()+"'");
+                } 
+              }else if(!(anExpr.getType() instanceof IntType) &&
+                !((ClassDec) anExpr.getType()).isChildOf(variable.getType().getName())){
                 error.show("Type mismatch: tried to assign '"+anExpr.getType().getName()
-                      +"' to '"+variable.getType().getName()+"'");
-            // Envio de mensagem com 
-            }/* else if( anExpr instanceof MessageSendToSelf || 
-                      anExpr instanceof MessageSendStatic ||
-                      anExpr instanceof MessageSendToSuper ||
-                      anExpr instanceof MessageSendToVariable){
-              
-            }*/else if(!(anExpr.getType() instanceof IntType) &&
-              !((ClassDec) anExpr.getType()).isChildOf(variable.getType().getName())){
-              error.show("Type mismatch: tried to assign '"+anExpr.getType().getName()
-                      +"' to '"+variable.getType().getName()+"'");
+                        +"' to '"+variable.getType().getName()+"'");
+              }
+            }else if(!(variable.getType() instanceof ClassDec)){
+                error.show("Cannot assign null to '"+variable.getType().getName()+"'");
             }
             
             result = new AssignmentStatement(variable,anExpr);
@@ -1252,6 +1299,9 @@ public class Compiler {
               error.show("Undefined variable '"+variableName+"'");
             
             // verificando se o metodo existe na classe daquela variavel
+            if(!(variable.getType() instanceof ClassDec)){
+              error.show("Cannot call method '"+methodName+"' in a non-object");
+            }
             aMethod = ((ClassDec)(variable.getType())).getMethod(methodName);
             if(aMethod == null){
               if(currentMethod.getName().equals(methodName))

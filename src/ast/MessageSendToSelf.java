@@ -7,7 +7,7 @@ public class MessageSendToSelf extends MessageSend {
     super(variable, method, exprList);
   }  
   public Type getType() { 
-        return null;
+        return getMethod().getType();
     }
     
     public void genK( PW pw, boolean putParenthesis ) {
