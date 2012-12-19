@@ -177,7 +177,7 @@ public class Compiler {
     
     String variableName = lexer.getStringValue();
     InstanceVariable iv = instanceVariableList.searchVariable(variableName);
-    if(iv != null){
+    if(iv != null && (iv.getIsStatic() == isStatic)){
       error.show("Redeclaration of instance variable '"+variableName+"'");
     }
     instanceVariableList.addElement(new InstanceVariable(variableName, type, isStatic));
@@ -216,13 +216,15 @@ public class Compiler {
       error.show("Redeclaration of member '"+name+"'");
     }
     // Verificando polimorfismo por sobreposicao
-     aMethod = currentClass.checkOverrideMethod(name);
+    aMethod = currentClass.checkOverrideMethod(name);
     if( aMethod != null && // metodo existe
         !methodDec.getType().equals(aMethod.getType()))
       error.show("Cannot override method. Superclass' method '"+aMethod.getName()
               +"' has return type '"+aMethod.getType().getName()
               +"' and redefined as '"+methodDec.getType().getName()+"'");
-    
+    aMethod = currentClass.getMethod(name,true,false);
+    if(aMethod != null)
+      error.show("Redeclaration of method '"+name+"'");
     lexer.nextToken(); // "parametros..."
     if (lexer.token != Symbol.RIGHTPAR) {
       methodDec.setParamList(formalParamDec());
@@ -243,7 +245,9 @@ public class Compiler {
     
     // Verificando se metodos nao-void tem return
     if(!(type instanceof VoidType) && returnStatement == null)
-      error.show("metodo com tipo de retorno deve ter pelo menos um comando return");
+      error.show("Return statement missing");
+    if((type instanceof VoidType) && returnStatement != null)
+      error.show("Return statement inside method without return type");
     returnStatement = null;
     
     // "}"
@@ -464,6 +468,7 @@ public class Compiler {
 
     WhileStatement whileStatement = new WhileStatement();
     currentStatement = whileStatement;
+    whileStack.push(whileStatement);
     
     lexer.nextToken();
     if (lexer.token != Symbol.LEFTPAR) {
@@ -473,7 +478,8 @@ public class Compiler {
     
     // Verifico se a expressao do while eh booleana
     Expr expr = expr();
-    if(!(expr instanceof BooleanExpr))
+    //if(!(expr instanceof BooleanExpr) || !(expr instanceof CompositeExpr))
+    if(!(expr instanceof BooleanExpr || expr.getType() instanceof BooleanType))
       error.show("While expression must be boolean");
     
     whileStatement.setExpr(expr);
@@ -483,6 +489,7 @@ public class Compiler {
     lexer.nextToken();
     whileStatement.setStatement(statement());
     currentStatement = null;
+    whileStack.pop();
     return whileStatement;
   }
   // OK
@@ -523,6 +530,7 @@ public class Compiler {
 
   private ReadStatement readStatement() {
     ReadStatement readStatement = new ReadStatement();
+    currentStatement = readStatement;
     lexer.nextToken();
     if (lexer.token != Symbol.LEFTPAR) {
       error.show("( expected");
@@ -567,6 +575,7 @@ public class Compiler {
       error.show(CompilerError.semicolon_expected);
     }
     lexer.nextToken();
+    currentStatement = null;
     return readStatement;
   }
   // OK
@@ -579,7 +588,12 @@ public class Compiler {
       error.show("( expected");
     }
     lexer.nextToken();
-    writeStatement.setExprList(exprList());
+    ExprList exprList = exprList();
+    for(int i = 0; i< exprList.getSize(); i++)
+      if(exprList.getList().get(i).getType() instanceof BooleanType){
+        error.show("Cannot write boolean values");
+      }
+    writeStatement.setExprList(exprList);
     if (lexer.token != Symbol.RIGHTPAR) {
       error.show(") expected");
     }
@@ -588,6 +602,8 @@ public class Compiler {
       error.show(CompilerError.semicolon_expected);
     }
     lexer.nextToken();
+    //writeStatement = null;
+    currentStatement = null;
     return writeStatement;
   }
   // OK
@@ -595,7 +611,7 @@ public class Compiler {
   private BreakStatement breakStatement() {
     BreakStatement breakStatement = new BreakStatement();
     // Verificando se o break esta dentro de um while
-    if(!(currentStatement instanceof BreakStatement))
+    if(whileStack.firstElement() == null)
       error.show("Break statement must be within a while statement");
     lexer.nextToken();
     if (lexer.token != Symbol.SEMICOLON) {
@@ -624,6 +640,7 @@ public class Compiler {
       if(currentStatement instanceof WriteStatement)
         error.show("Cannot write to an object");
     }
+    
     anExprList.addElement(expr);
     while (lexer.token == Symbol.COMMA) {
       lexer.nextToken();
@@ -650,6 +667,12 @@ public class Compiler {
       lexer.nextToken();
       Expr right = simpleExpr();
       left = new CompositeExpr(left, op, right);
+    }
+    op = lexer.token;
+    if (op == Symbol.EQ || op == Symbol.NEQ
+            || op == Symbol.LE || op == Symbol.LT
+            || op == Symbol.GE || op == Symbol.GT){
+      error.show("Cannot use multiple comparison operators");
     }
     return left;
   }
@@ -852,7 +875,7 @@ public class Compiler {
                   exprList = getRealParameters();
 
                   // SEM - Verificando se o metodo existe
-                  aMethod = currentClass.getMethod(ident,true);
+                  aMethod = currentClass.getMethod(ident,true,true);
                   if (aMethod == null) {
                     error.show("Method " + ident + " doesn't exist");
                   }
@@ -1056,7 +1079,8 @@ public class Compiler {
         lexer.nextToken();
         switch (lexer.token) {
           // OK
-          case ASSIGN: 
+          case ASSIGN:
+            currentAssignment = new AssignmentStatement(null, null);
             // this.id = expr
             lexer.nextToken();
             Expr anExpr = expr();
@@ -1066,6 +1090,10 @@ public class Compiler {
             if (instanceVariable == null) {
               error.show("Attempted to assign value to undefined attribute '" + ident + "' in class '" + currentClass.getName() + "'");
             }
+            // Verificando se nao estou usando this em um metodo estatico
+            if(currentMethod.isIsStatic())
+              error.show("Cannot use this in static context");
+
             // Verificando se os tipos sao iguais
             if(!anExpr.getType().getName().equals(instanceVariable.getType().getName())){
               error.show("Type mismatch: tried to assign '"+anExpr.getType().getName()
@@ -1073,6 +1101,7 @@ public class Compiler {
             }
 
             result = new AssignmentStatement(instanceVariable, anExpr);
+            currentAssignment = null;
             break;
           // OK
           case DOT:
@@ -1098,7 +1127,7 @@ public class Compiler {
 
             // verificando se a classe do objeto tem um metodo com ese nome
             aClass = (ClassDec) anInstanceVariable.getType();
-            aMethod = aClass.getMethod(methodName);
+            aMethod = aClass.getMethod(methodName,true,true);
             if (aMethod == null) {
               if(currentMethod.getName().equals(methodName))
                 aMethod = currentMethod;
@@ -1111,10 +1140,12 @@ public class Compiler {
             // this.id()
             exprList = getRealParameters();
             // SEM - Verificando se o metodo existe
-            aMethod = currentClass.getMethod(ident,true);
+            aMethod = currentClass.getMethod(ident,true,true);
             if (aMethod == null) {
               error.show("Method " + ident + " doesn't exist");
             }
+            if(currentMethod.isIsStatic())
+              error.show("Cannot use this in static context");
             // Checando os parametros
             paramCompare(aMethod, exprList);
             result = new MessageSendStatement(new MessageSendToSelf(new Variable("this", currentClass), aMethod, exprList));
@@ -1158,6 +1189,7 @@ public class Compiler {
           // OK
           case ASSIGN:
             // id = expr
+            currentAssignment = new AssignmentStatement(null, null);
             lexer.nextToken();
             Expr anExpr = expr();
             // verificando se a variavel pra quem estou atribuindo
@@ -1166,17 +1198,28 @@ public class Compiler {
             if(variable == null)
               error.show("Variable '"+variableName+"' doesn't exist in this context");
 
-            /*if(!anExpr.getType().equals(variable.getType()))
-              error.show("Type mismatch: tried to assign '"+anExpr.getType().getName()
-                      +"' to '"+variable.getType().getName()+"'");*/
-            if(
-              !(anExpr.getType() instanceof IntType) &&
+            if(anExpr instanceof NumberExpr && !(variable.getType() instanceof IntType)){
+              error.show("Cannot assign value of primitive type '"+anExpr.getType().getName()
+                      +"' to '"+variable.getType().getName()+"'");
+            }
+            if(anExpr.getType() instanceof BooleanType){
+              if(!(variable.getType() instanceof BooleanType))
+                error.show("Type mismatch: tried to assign '"+anExpr.getType().getName()
+                      +"' to '"+variable.getType().getName()+"'");
+            // Envio de mensagem com 
+            }/* else if( anExpr instanceof MessageSendToSelf || 
+                      anExpr instanceof MessageSendStatic ||
+                      anExpr instanceof MessageSendToSuper ||
+                      anExpr instanceof MessageSendToVariable){
+              
+            }*/else if(!(anExpr.getType() instanceof IntType) &&
               !((ClassDec) anExpr.getType()).isChildOf(variable.getType().getName())){
               error.show("Type mismatch: tried to assign '"+anExpr.getType().getName()
                       +"' to '"+variable.getType().getName()+"'");
             }
             
             result = new AssignmentStatement(variable,anExpr);
+            currentAssignment = null;
             break;
           case IDENT:
            id = lexer.getStringValue();
@@ -1215,6 +1258,11 @@ public class Compiler {
                 aMethod = currentMethod;
               else
                 error.show("Call to undefined method '"+methodName+"'");
+            }
+            if(aMethod != null && aMethod.isIsStatic())
+              error.show("Trying to call static method from non-static context");
+            if(!(aMethod.getType() instanceof VoidType) && currentAssignment == null){
+              error.show("Return value is not assigned to any variable");
             }
             // comparando os parametros
             //paramCompare(aMethod, exprList);
@@ -1260,4 +1308,6 @@ public class Compiler {
   private MethodDec currentMethod;
   private ReturnStatement returnStatement = null;
   private Statement currentStatement = null;
+  private AssignmentStatement currentAssignment = null;
+  private Stack<WhileStatement> whileStack = new Stack<WhileStatement>();
 }

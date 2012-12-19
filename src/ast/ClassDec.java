@@ -61,7 +61,7 @@ public class ClassDec extends Type {
     this.privateMethodList = privateMethodList;
   }
   public MethodDec getMethod(String name){
-    return this.getMethod(name,false);
+    return this.getMethod(name,false,true);
   }
   public MethodDec checkOverrideMethod(String name){
     MethodDec m = null;
@@ -73,7 +73,7 @@ public class ClassDec extends Type {
     
     return m;
   }
-  public MethodDec getMethod(String name, boolean includePrivateMethods){
+  public MethodDec getMethod(String name, boolean includePrivateMethods, boolean includeSuperclassMethods){
     MethodDec methodDec;
     for(int i = 0; i < publicMethodList.getSize();i++){
       methodDec = publicMethodList.get(i);
@@ -89,7 +89,7 @@ public class ClassDec extends Type {
         }
       }
     }
-    if(superclass != null){
+    if(includeSuperclassMethods && superclass != null){
       return superclass.getMethod(name);
     }
     return null;
