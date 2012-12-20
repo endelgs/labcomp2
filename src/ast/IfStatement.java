@@ -1,6 +1,6 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+/**
+ * 379930 Endel Guimaraes Silva
+ * 400564 Felipe Augusto Rosa
  */
 package ast;
 
