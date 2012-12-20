@@ -13,6 +13,10 @@ public class VariableExpr extends Expr {
     public Type getType() {
         return v.getType();
     }
+
+  public Variable getV() {
+    return v;
+  }
     
     private Variable v;
 }

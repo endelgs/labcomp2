@@ -18,24 +18,24 @@ public class Compiler {
 
 
     Program program = null;
-    //try {
-      lexer.nextToken();
-      if (lexer.token == Symbol.EOF) {
-        error.show("Unexpected end of file");
-      }
-      program = program();
-      if (lexer.token != Symbol.EOF) {
-        program = null;
-        error.show("End of file expected");
-      }
-    //} catch (Exception e) {
-      // the below statement prints the stack of called methods.
-      // of course, it should be removed if the compiler were
-      // a production compiler.
+    try {
+    lexer.nextToken();
+    if (lexer.token == Symbol.EOF) {
+      error.show("Unexpected end of file");
+    }
+    program = program();
+    if (lexer.token != Symbol.EOF) {
+      program = null;
+      error.show("End of file expected");
+    }
+    } catch (Exception e) {
+    // the below statement prints the stack of called methods.
+    // of course, it should be removed if the compiler were
+    // a production compiler.
 
-      //e.printStackTrace();
-      //program = null;
-    //}
+    //e.printStackTrace();
+    program = null;
+    }
 
     return program;
   }
@@ -56,7 +56,7 @@ public class Compiler {
   // falta o tratamento de variaveis e metodos estaticos
 
   // OK
-  private ClassDec classDec() { 
+  private ClassDec classDec() {
     // Note que os metodos desta classe nao correspondem exatamente as regras
     // da gramatica. Este metodo classDec, por exemplo, implementa
     // a producao ClassDec (veja abaixo) e partes de outras producoes.
@@ -90,8 +90,9 @@ public class Compiler {
 
       lexer.nextToken();
     }
-    if(className.equals(superclassName))
-      error.show("Class '"+className+"' cannot inherit from itself");
+    if (className.equals(superclassName)) {
+      error.show("Class '" + className + "' cannot inherit from itself");
+    }
     //lexer.nextToken();
     if (lexer.token != Symbol.LEFTCURBRACKET) {
       error.show("{ expected", true);
@@ -101,13 +102,14 @@ public class Compiler {
     ClassDec superClass = null;
     currentClass = classDec;
     symbolTable.putInGlobal(className, classDec);
-    
+
     // Caso a classe atual seja herdada, faco a busca na tabela de simbolos, 
     // verifico se ela existe e seto ela como superclasse
     if (superclassName != null) {
       superClass = symbolTable.getInGlobal(superclassName);
-      if(superClass == null)
-        error.show("Trying to extend undefined class '"+superclassName+"'");
+      if (superClass == null) {
+        error.show("Trying to extend undefined class '" + superclassName + "'");
+      }
       classDec.setSuperclass(superClass);
     }
     // lendo os metodos e atributos da classe
@@ -117,12 +119,12 @@ public class Compiler {
 
       Symbol qualifier;
       boolean isStatic = false;
-      if(lexer.token == Symbol.STATIC){
-          isStatic = true;
-          lexer.nextToken();
+      if (lexer.token == Symbol.STATIC) {
+        isStatic = true;
+        lexer.nextToken();
       }
-      
-      switch (lexer.token) { 
+
+      switch (lexer.token) {
         case PRIVATE:
           lexer.nextToken();
           qualifier = Symbol.PRIVATE;
@@ -142,24 +144,24 @@ public class Compiler {
       // Lendo o nome da variavel/metodo
       String name = lexer.getStringValue();
       lexer.nextToken();
-      
+
       // Se for um "(", eh um metodo
       if (lexer.token == Symbol.LEFTPAR) {
         if (qualifier == Symbol.PUBLIC) {
           classDec.getPublicMethodList().addElement(methodDec(t, name, qualifier, isStatic));
-        } else if(qualifier == Symbol.PRIVATE) {
+        } else if (qualifier == Symbol.PRIVATE) {
           classDec.getPrivateMethodList().addElement(methodDec(t, name, qualifier, isStatic));
-        }else{
-          error.show("Invalid qualifier '"+lexer.getStringValue()+"'. public/private expected");
+        } else {
+          error.show("Invalid qualifier '" + lexer.getStringValue() + "'. public/private expected");
         }
-      // Uma variavel de instancia nao pode ser publica
+        // Uma variavel de instancia nao pode ser publica
       } else if (qualifier != Symbol.PRIVATE) {
         error.show("Attempt to declare a public instance variable");
       } else { // faz a insercao direto na lista de variaveis 'por referencia'
         instanceVarDec(t, name, classDec.getInstanceVariableList(), isStatic);
       }
     }
-    
+
     if (lexer.token != Symbol.RIGHTCURBRACKET) {
       error.show("public/private or \"}\" expected");
     }
@@ -170,17 +172,17 @@ public class Compiler {
 
   private void instanceVarDec(Type type, String name, InstanceVariableList instanceVariableList, boolean isStatic) {
     //   InstVarDec ::= [ "static"  ] "private"  Type  IdList  ";"
-    
+
     // ao entrar nesse metodo, o programa ja analisou a primeira variavel da 
     // sequencia de declaracoes
-    
+
     String variableName = lexer.getStringValue();
     InstanceVariable iv = instanceVariableList.searchVariable(variableName);
-    if(iv != null && (iv.getIsStatic() == isStatic)){
-      error.show("Redeclaration of instance variable '"+variableName+"'");
+    if (iv != null && (iv.getIsStatic() == isStatic)) {
+      error.show("Redeclaration of instance variable '" + variableName + "'");
     }
     instanceVariableList.addElement(new InstanceVariable(variableName, type, isStatic));
-    
+
     // Caso haja mais de uma declaracao
     while (lexer.token == Symbol.COMMA) {
       lexer.nextToken();
@@ -190,7 +192,7 @@ public class Compiler {
       variableName = lexer.getStringValue();
       iv = instanceVariableList.searchVariable(variableName);
 
-        error.show("Redeclaration of instance variable '"+variableName+"'");
+      error.show("Redeclaration of instance variable '" + variableName + "'");
       instanceVariableList.addElement(new InstanceVariable(variableName, type, isStatic));
       lexer.nextToken();
     }
@@ -216,29 +218,36 @@ public class Compiler {
       methodDec.setParamList(formalParamDec());
       //signatureCompare(methodDec,aMethod);
     }
-    if(currentClass.getVariable(name)!= null){
-      error.show("Redeclaration of member '"+name+"'");
+    if (currentClass.getVariable(name) != null) {
+      error.show("Redeclaration of member '" + name + "'");
     }
     // Verificando polimorfismo por sobreposicao
     aMethod = currentClass.checkOverrideMethod(name);
-    if( aMethod != null){ // metodo existe
-        if(!methodDec.getType().equals(aMethod.getType()))
-      error.show("Cannot override method. Superclass' method '"+aMethod.getName()
-              +"' has return type '"+aMethod.getType().getName()
-              +"' and redefined as '"+methodDec.getType().getName()+"'");
+    if (aMethod != null) { // metodo existe
+      
+      // Evito comparacao de assinaturas caso algum dos metodos seja estatico
+      if(!(aMethod.isIsStatic() && methodDec.isIsStatic())){
+        if (!methodDec.getType().equals(aMethod.getType())) {
+          error.show("Cannot override method. Superclass' method '" + aMethod.getName()
+                  + "' has return type '" + aMethod.getType().getName()
+                  + "' and redefined as '" + methodDec.getType().getName() + "'");
+        }
         // Comparando as assinaturas dos metodos
         signatureCompare(aMethod, methodDec);
+      }
     }
-    aMethod = currentClass.getMethod(name,true,false);
-    if(aMethod != null)
-      error.show("Redeclaration of method '"+name+"'");
-    
+    aMethod = currentClass.getMethod(name, true, false,true);
+    if (aMethod != null) {
+      if(aMethod.isIsStatic() == methodDec.isIsStatic())
+        error.show("Redeclaration of method '" + name + "'");
+    }
+
 
     // ")"
     if (lexer.token != Symbol.RIGHTPAR) {
       error.show(") expected");
     }
-    
+
     lexer.nextToken(); // "{"
     if (lexer.token != Symbol.LEFTCURBRACKET) {
       error.show("{ expected");
@@ -246,14 +255,16 @@ public class Compiler {
 
     lexer.nextToken(); // "statements..."
     methodDec.setStatementList(statementList());
-    
+
     // Verificando se metodos nao-void tem return
-    if(!(type instanceof VoidType) && returnStatement == null)
+    if (!(type instanceof VoidType) && returnStatement == null) {
       error.show("Return statement missing");
-    if((type instanceof VoidType) && returnStatement != null)
+    }
+    if ((type instanceof VoidType) && returnStatement != null) {
       error.show("Return statement inside method without return type");
+    }
     returnStatement = null;
-    
+
     // "}"
     if (lexer.token != Symbol.RIGHTCURBRACKET) {
       error.show("} expected");
@@ -262,14 +273,14 @@ public class Compiler {
     // do metodo e o cursor eh posicionada logo depois do ultimo "}"
     lexer.nextToken();
     symbolTable.removeLocalIdent();
-    
-    
+
+
     return methodDec;
   }
   // OK
 
   private LocalVarList localDec(Type type) {
-    
+
     // LocalDec ::= Type IdList ";"
     LocalVarList localVarList = new LocalVarList();
 
@@ -278,26 +289,28 @@ public class Compiler {
     }
     // Buscando na tabela local pra ver se existe uma variavel declarada com o mesmo nome
     Variable variable = symbolTable.getInLocal(lexer.getStringValue());
-    if(variable != null){
-      error.show("Redeclaration of variable '"+lexer.getStringValue()+"'");
+    if (variable != null) {
+      error.show("Redeclaration of variable '" + lexer.getStringValue() + "'");
     }
-    
+
     localVarList.addElement(new Variable(lexer.getStringValue(), type));
-    symbolTable.putInLocal(lexer.getStringValue(), new Variable(lexer.getStringValue(),type));
+    symbolTable.putInLocal(lexer.getStringValue(), new Variable(lexer.getStringValue(), type));
     lexer.nextToken();
-    while (lexer.token == Symbol.COMMA){
+    while (lexer.token == Symbol.COMMA) {
       lexer.nextToken();
       if (lexer.token != Symbol.IDENT) {
         error.show("Identifier expected");
       }
-      if(symbolTable.getInLocal(lexer.getStringValue()) != null)
-        error.show("Redeclaration of variable '"+lexer.getStringValue()+"'");
+      if (symbolTable.getInLocal(lexer.getStringValue()) != null) {
+        error.show("Redeclaration of variable '" + lexer.getStringValue() + "'");
+      }
       localVarList.addElement(new Variable(lexer.getStringValue(), type));
-      symbolTable.putInLocal(lexer.getStringValue(), new Variable(lexer.getStringValue(),type));
+      symbolTable.putInLocal(lexer.getStringValue(), new Variable(lexer.getStringValue(), type));
       lexer.nextToken();
     }
-    if(lexer.token != Symbol.SEMICOLON)
+    if (lexer.token != Symbol.SEMICOLON) {
       error.show("';' expected");
+    }
     return localVarList;
   }
   // OK
@@ -473,19 +486,20 @@ public class Compiler {
     WhileStatement whileStatement = new WhileStatement();
     currentStatement = whileStatement;
     whileStack.push(whileStatement);
-    
+
     lexer.nextToken();
     if (lexer.token != Symbol.LEFTPAR) {
       error.show("( expected");
     }
     lexer.nextToken();
-    
+
     // Verifico se a expressao do while eh booleana
     Expr expr = expr();
     //if(!(expr instanceof BooleanExpr) || !(expr instanceof CompositeExpr))
-    if(!(expr instanceof BooleanExpr || expr.getType() instanceof BooleanType))
+    if (!(expr instanceof BooleanExpr || expr.getType() instanceof BooleanType)) {
       error.show("While expression must be boolean");
-    
+    }
+
     whileStatement.setExpr(expr);
     if (lexer.token != Symbol.RIGHTPAR) {
       error.show(") expected");
@@ -526,15 +540,15 @@ public class Compiler {
     Expr expr = expr();
     // Verificando se o tipo de retorno do metodo bate com a expressao retornada
     // CASO 1: tipos primitivos
-    if(expr.getType() instanceof IntType || expr.getType() instanceof BooleanType || expr.getType() instanceof StringType){
-      if(!expr.getType().equals(currentMethod.getType())){
-        error.show("Type mismatch. Expecting return type to be '"+currentMethod.getType().getName()+
-              "' or one of its subclasses. '"+expr.getType().getName()+"' given");
+    if (expr.getType() instanceof IntType || expr.getType() instanceof BooleanType || expr.getType() instanceof StringType) {
+      if (!expr.getType().equals(currentMethod.getType())) {
+        error.show("Type mismatch. Expecting return type to be '" + currentMethod.getType().getName()
+                + "' or one of its subclasses. '" + expr.getType().getName() + "' given");
       }
-    // CASO 2: tipos complexos
-    }else if(!((ClassDec)expr.getType()).isChildOf(currentMethod.getType().getName())){
-      error.show("Type mismatch. Expecting return type to be '"+currentMethod.getType().getName()+
-              "' or one of its subclasses. '"+expr.getType().getName()+"' given");
+      // CASO 2: tipos complexos
+    } else if (!((ClassDec) expr.getType()).isChildOf(currentMethod.getType().getName())) {
+      error.show("Type mismatch. Expecting return type to be '" + currentMethod.getType().getName()
+              + "' or one of its subclasses. '" + expr.getType().getName() + "' given");
     }
     returnStatement.setExpr(expr);
     if (lexer.token != Symbol.SEMICOLON) {
@@ -567,19 +581,20 @@ public class Compiler {
 
       String name = (String) lexer.getStringValue();
       Variable v = symbolTable.getInLocal(name);
-      if(v == null){
+      if (v == null) {
         v = currentClass.getVariable(name);
-        if(v == null){
-          error.show("Undefined variable '"+name+"'");
+        if (v == null) {
+          error.show("Undefined variable '" + name + "'");
         }
       }
-      if(v.getType() instanceof ClassDec){
+      if (v.getType() instanceof ClassDec) {
         error.show("Cannot read to an object");
       }
       // Nao pode ler pra dentro de variaveis boolean
-      if(v.getType() instanceof BooleanType)
+      if (v.getType() instanceof BooleanType) {
         error.show("Cannot read to a boolean variable");
-      
+      }
+
       readStatement.getVariableList().add(v); // precisa verificar esse intType depois
 
       lexer.nextToken();
@@ -612,10 +627,11 @@ public class Compiler {
     }
     lexer.nextToken();
     ExprList exprList = exprList();
-    for(int i = 0; i< exprList.getSize(); i++)
-      if(exprList.getList().get(i).getType() instanceof BooleanType){
+    for (int i = 0; i < exprList.getSize(); i++) {
+      if (exprList.getList().get(i).getType() instanceof BooleanType) {
         error.show("Cannot write boolean values");
       }
+    }
     writeStatement.setExprList(exprList);
     if (lexer.token != Symbol.RIGHTPAR) {
       error.show(") expected");
@@ -634,8 +650,9 @@ public class Compiler {
   private BreakStatement breakStatement() {
     BreakStatement breakStatement = new BreakStatement();
     // Verificando se o break esta dentro de um while
-    if(whileStack.empty())
+    if (whileStack.empty()) {
       error.show("Break statement must be within a while statement");
+    }
     lexer.nextToken();
     if (lexer.token != Symbol.SEMICOLON) {
       error.show(CompilerError.semicolon_expected);
@@ -657,23 +674,27 @@ public class Compiler {
 
     ExprList anExprList = new ExprList();
     Expr expr = expr();
-    if(expr.getType() instanceof ClassDec){
-      if(currentStatement instanceof ReadStatement)
+    if (expr.getType() instanceof ClassDec) {
+      if (currentStatement instanceof ReadStatement) {
         error.show("Cannot read to an object");
-      if(currentStatement instanceof WriteStatement)
+      }
+      if (currentStatement instanceof WriteStatement) {
         error.show("Cannot write an object");
+      }
     }
-    
+
     anExprList.addElement(expr);
     while (lexer.token == Symbol.COMMA) {
       lexer.nextToken();
       expr = expr();
-      if(expr.getType() instanceof ClassDec){
-      if(currentStatement instanceof ReadStatement)
-        error.show("Cannot read to an object");
-      if(currentStatement instanceof WriteStatement)
-        error.show("Cannot write to an object");
-    }
+      if (expr.getType() instanceof ClassDec) {
+        if (currentStatement instanceof ReadStatement) {
+          error.show("Cannot read to an object");
+        }
+        if (currentStatement instanceof WriteStatement) {
+          error.show("Cannot write to an object");
+        }
+      }
       anExprList.addElement(expr);
     }
     return anExprList;
@@ -689,20 +710,20 @@ public class Compiler {
             || op == Symbol.GE || op == Symbol.GT) {
       lexer.nextToken();
       Expr right = simpleExpr();
-      if(right.getType() instanceof ClassDec || left.getType() instanceof ClassDec){
-        if(!((right.getType() instanceof ClassDec && left.getType() instanceof UndefinedType)
-         || (left.getType() instanceof ClassDec && right.getType() instanceof UndefinedType))){
-
-        error.show("Cannot apply operator '"+op+"' to pointers");
+      if (right.getType() instanceof ClassDec || left.getType() instanceof ClassDec) {
+        if (!((right.getType() instanceof ClassDec && left.getType() instanceof UndefinedType)
+                || (left.getType() instanceof ClassDec && right.getType() instanceof UndefinedType))) {
+          if(!(((VariableExpr) right).getV().isIsNull() ^ ((VariableExpr) right).getV().isIsNull()))
+            error.show("Cannot apply operator '" + op + "' to pointers");
         }
       }
-      
+
       left = new CompositeExpr(left, op, right);
     }
     op = lexer.token;
     if (op == Symbol.EQ || op == Symbol.NEQ
             || op == Symbol.LE || op == Symbol.LT
-            || op == Symbol.GE || op == Symbol.GT){
+            || op == Symbol.GE || op == Symbol.GT) {
       error.show("Cannot use multiple comparison operators");
     }
     return left;
@@ -717,9 +738,11 @@ public class Compiler {
             || op == Symbol.OR) {
       lexer.nextToken();
       Expr right = term();
-      if(op == Symbol.MINUS || op == Symbol.PLUS)
-        if(!(right.getType() instanceof IntType && left.getType() instanceof IntType))
-          error.show("Operator '"+op+"' cannot be applied to given types");
+      if (op == Symbol.MINUS || op == Symbol.PLUS) {
+        if (!(right.getType() instanceof IntType && left.getType() instanceof IntType)) {
+          error.show("Operator '" + op + "' cannot be applied to given types");
+        }
+      }
 
       left = new CompositeExpr(left, op, right);
     }
@@ -736,8 +759,9 @@ public class Compiler {
       lexer.nextToken();
       Expr right = signalFactor();
       // Verificando se os operadores sao validos
-      if(op != Symbol.AND && !(right.getType() instanceof IntType && left.getType() instanceof IntType))
-        error.show("Operator '"+op+"' cannot be applied to given types");
+      if (op != Symbol.AND && !(right.getType() instanceof IntType && left.getType() instanceof IntType)) {
+        error.show("Operator '" + op + "' cannot be applied to given types");
+      }
       left = new CompositeExpr(left, op, right);
     }
     return left;
@@ -749,9 +773,10 @@ public class Compiler {
     if ((op = lexer.token) == Symbol.PLUS || op == Symbol.MINUS) {
       lexer.nextToken();
       Expr factor = factor();
-      if(!(factor instanceof NumberExpr) && 
-         !(factor instanceof VariableExpr && factor.getType() instanceof IntType))
-        error.show("Operator '"+op+"' cannot be applied to '"+factor.getType().getName()+"'");
+      if (!(factor instanceof NumberExpr)
+              && !(factor instanceof VariableExpr && factor.getType() instanceof IntType)) {
+        error.show("Operator '" + op + "' cannot be applied to '" + factor.getType().getName() + "'");
+      }
       return new SignalExpr(op, factor);
     } else {
       return factor();
@@ -781,8 +806,9 @@ public class Compiler {
       case NOT:
         lexer.nextToken();
         e = expr();
-        if(!(e.getType() instanceof BooleanType))
-          error.show("Operator '"+Symbol.NOT+"' cannot be applied to '"+e.getType().getName()+"'");
+        if (!(e.getType() instanceof BooleanType)) {
+          error.show("Operator '" + Symbol.NOT + "' cannot be applied to '" + e.getType().getName() + "'");
+        }
         return new UnaryExpr(e, Symbol.NOT);
       case LITERALSTRING:
         String literalString = lexer.getLiteralStringValue();
@@ -879,11 +905,12 @@ public class Compiler {
           // OK
           case THIS:
             lexer.nextToken();
-            if(lexer.token == Symbol.SEMICOLON ||
-                lexer.token == Symbol.COMMA ||
-                lexer.token == Symbol.RIGHTPAR)
+            if (lexer.token == Symbol.SEMICOLON
+                    || lexer.token == Symbol.COMMA
+                    || lexer.token == Symbol.RIGHTPAR) {
               return new ThisExpr(currentClass);
-            
+            }
+
             if (lexer.token != Symbol.DOT) {
               // Verificando se o metodo nao eh estatico
               if (currentMethod.isIsStatic()) {
@@ -906,7 +933,7 @@ public class Compiler {
                   exprList = getRealParameters();
 
                   // SEM - Verificando se o metodo existe
-                  aMethod = currentClass.getMethod(ident,true,true);
+                  aMethod = currentClass.getMethod(ident, true, true,true);
                   if (aMethod == null) {
                     error.show("Method " + ident + " doesn't exist");
                   }
@@ -974,43 +1001,55 @@ public class Compiler {
                 case IDENT:
                   methodName = lexer.getStringValue();
                   lexer.nextToken();
-                  exprList = getRealParameters();
-                  if ((aVariable = symbolTable.getInLocal(variableName)) != null) {
-                    // x is a variable
-                    Type t = aVariable.getType();
-                    if (!(t instanceof ClassDec)) {
-                      error.show("Trying to access attribute '" + variableName + "' in a non-object");
-                    }
-                    aClass = (ClassDec) t;
+                  // Caso seja chamada pra metodo
+                  if (lexer.token == Symbol.LEFTPAR) {
+                    exprList = getRealParameters();
+                    if ((aVariable = symbolTable.getInLocal(variableName)) != null) {
+                      // x is a variable
+                      Type t = aVariable.getType();
+                      if (!(t instanceof ClassDec)) {
+                        error.show("Trying to access attribute '" + variableName + "' in a non-object");
+                      }
+                      aClass = (ClassDec) t;
 
-                    // Verificando se o metodo existe
-                    aMethod = aClass.getMethod(methodName);
-                    if (aMethod == null) {
-                      if(currentMethod.getName().equals(methodName))
-                        aMethod = currentMethod;
-                      else
-                        error.show("Trying to access undefined method '" + methodName + "' in class '" + aClass.getName() + "'");
-                    }
-                    // Checando os parametros
-                    paramCompare(aMethod, exprList);
-
-                    return new MessageSendToVariable(aVariable, aMethod, exprList);
-
-                  } else {
-                    // em "x.m()", x is not a variable. Should be a class name
-                    if ((aClass = symbolTable.getInGlobal(variableName)) == null) {
-                      error.show("Trying to access undefined attribute '" + variableName + "' in class '" + aClass.getName() + "'");
-                    }
-
-                    // nesta linha, verifique se methodName e um metodo estatico da
-                    // classe aClass que pode aceitar como parmetros as expressoes 
-                    // de exprList.Algo como (apenas o inicio):
-                    aMethod = aClass.getMethod(methodName,true,true);
-                    if (aMethod.isIsStatic()) {
+                      // Verificando se o metodo existe
+                      aMethod = aClass.getMethod(methodName);
+                      if (aMethod == null) {
+                        if (currentMethod.getName().equals(methodName)) {
+                          aMethod = currentMethod;
+                        } else {
+                          error.show("Trying to access undefined method '" + methodName + "' in class '" + aClass.getName() + "'");
+                        }
+                      }
                       // Checando os parametros
                       paramCompare(aMethod, exprList);
-                    }
-                    return new MessageSendStatic(aVariable, aMethod, exprList);
+
+                      return new MessageSendToVariable(aVariable, aMethod, exprList);
+
+                    } else {
+                      // em "x.m()", x is not a variable. Should be a class name
+                      if ((aClass = symbolTable.getInGlobal(variableName)) == null) {
+                        error.show("Trying to access undefined attribute '" + variableName + "' in class '" + aClass.getName() + "'");
+                      }
+
+                      // nesta linha, verifique se methodName e um metodo estatico da
+                      // classe aClass que pode aceitar como parmetros as expressoes 
+                      // de exprList.Algo como (apenas o inicio):
+                      aMethod = aClass.getMethod(methodName, true, true,true);
+                      if (aMethod.isIsStatic()) {
+                        // Checando os parametros
+                        paramCompare(aMethod, exprList);
+                      }
+                      return new MessageSendStatic(aClass, aMethod, exprList);
+
+                    }// if ((aVariable = symbolTable.getInLocal(variableName)) != null)
+                  // Caso esteja acessando uma variavel estatica
+                  } else {
+                    ClassDec cd = symbolTable.getInGlobal(variableName);
+                    if(cd == null)
+                      error.show("Attempt to access property '"+methodName+"' in undefined class '"+variableName+"'");
+                    Variable v = cd.getVariable(methodName);
+                    return new StaticVarAccess(v, cd);
                   }
                 default:
                   error.show(CompilerError.ident_expected);
@@ -1024,36 +1063,39 @@ public class Compiler {
     }
 
   }
-  private void signatureCompare(Method oldMethod, Method newMethod){
-    if(oldMethod.getParamList().getSize() != newMethod.getParamList().getSize()){
+
+  private void signatureCompare(Method oldMethod, Method newMethod) {
+    if (oldMethod.getParamList().getSize() != newMethod.getParamList().getSize()) {
       error.show("Cannot redefine method. Param count doesn't match with superclass");
     }
-    for(int i = 0; i < oldMethod.getParamList().getSize(); i++){
-      if(!oldMethod.getParamList().get(i).getType().getName().equals(newMethod.getParamList().get(i).getType().getName())){
+    for (int i = 0; i < oldMethod.getParamList().getSize(); i++) {
+      if (!oldMethod.getParamList().get(i).getType().getName().equals(newMethod.getParamList().get(i).getType().getName())) {
         error.show("Cannot redefine method. Parameters don't match");
       }
     }
   }
+
   private void paramCompare(Method aMethod, ExprList exprList) {
     // Se o metodo nao tiver parametros E nao houver parametros a serem passados
     // simplesmente retorno
-    if(aMethod.getParamList().getSize() == 0 && exprList == null)
+    if (aMethod.getParamList().getSize() == 0 && exprList == null) {
       return;
-    
+    }
+
     // SEM - comparando o NUMERO de parametros passados vs. parametros 
     // que o metodo espera
-    if ((aMethod.getParamList().getSize() == 0 && exprList == null) || 
-        (aMethod.getParamList().getSize() != exprList.getSize())) {
+    if ((aMethod.getParamList().getSize() == 0 && exprList == null)
+            || (aMethod.getParamList().getSize() != exprList.getSize())) {
       error.show("Param count mismatch");
     }
 
     // SEM - comparando o TIPO dos parametros
-    for (int i = 0; i< exprList.getSize(); i++) {
+    for (int i = 0; i < exprList.getSize(); i++) {
       Variable expParam = aMethod.getParamList().get(i);
       Expr pasParam = exprList.getElement(i);
       // verifico se os parametros sao do mesmo tipo ou se tem a mesma heranca
-      if ((pasParam.getType() instanceof ClassDec) &&
-          !((ClassDec)pasParam.getType()).isChildOf(expParam.getType().getName())) {
+      if ((pasParam.getType() instanceof ClassDec)
+              && !((ClassDec) pasParam.getType()).isChildOf(expParam.getType().getName())) {
         error.show("Param type mismatch: '" + expParam.getType().getName() + "' expected. '" + pasParam.getType().getName() + "' given.");
       }
     }
@@ -1131,13 +1173,14 @@ public class Compiler {
               error.show("Attempted to assign value to undefined attribute '" + ident + "' in class '" + currentClass.getName() + "'");
             }
             // Verificando se nao estou usando this em um metodo estatico
-            if(currentMethod.isIsStatic())
+            if (currentMethod.isIsStatic()) {
               error.show("Cannot use this in static context");
+            }
 
             // Verificando se os tipos sao iguais
-            if(!anExpr.getType().getName().equals(instanceVariable.getType().getName())){
-              error.show("Type mismatch: tried to assign '"+anExpr.getType().getName()
-                      +"' to '"+instanceVariable.getType().getName()+"'");
+            if (!anExpr.getType().getName().equals(instanceVariable.getType().getName())) {
+              error.show("Type mismatch: tried to assign '" + anExpr.getType().getName()
+                      + "' to '" + instanceVariable.getType().getName() + "'");
             }
 
             result = new AssignmentStatement(instanceVariable, anExpr);
@@ -1153,7 +1196,7 @@ public class Compiler {
             methodName = lexer.getStringValue();
             lexer.nextToken();
             exprList = getRealParameters();
-            
+
             // verificando se o atributo existe
             anInstanceVariable = currentClass.getVariable(ident);
             if (anInstanceVariable == null) {
@@ -1167,12 +1210,13 @@ public class Compiler {
 
             // verificando se a classe do objeto tem um metodo com ese nome
             aClass = (ClassDec) anInstanceVariable.getType();
-            aMethod = aClass.getMethod(methodName,true,true);
+            aMethod = aClass.getMethod(methodName, true, true,true);
             if (aMethod == null) {
-              if(currentMethod.getName().equals(methodName))
+              if (currentMethod.getName().equals(methodName)) {
                 aMethod = currentMethod;
-              else
+              } else {
                 error.show("Trying to access undefined method '" + methodName + "' in class '" + currentClass.getName() + "'");
+              }
             }
             result = new MessageSendStatement(new MessageSendToVariable(anInstanceVariable, aMethod, exprList));
             break;
@@ -1180,12 +1224,13 @@ public class Compiler {
             // this.id()
             exprList = getRealParameters();
             // SEM - Verificando se o metodo existe
-            aMethod = currentClass.getMethod(ident,true,true);
+            aMethod = currentClass.getMethod(ident, true, true,true);
             if (aMethod == null) {
               error.show("Method " + ident + " doesn't exist");
             }
-            if(currentMethod.isIsStatic())
+            if (currentMethod.isIsStatic()) {
               error.show("Cannot use this in static context");
+            }
             // Checando os parametros
             paramCompare(aMethod, exprList);
             result = new MessageSendStatement(new MessageSendToSelf(new Variable("this", currentClass), aMethod, exprList));
@@ -1214,7 +1259,7 @@ public class Compiler {
         }
         aMethod = aClass.getMethod(methodName);
         if (aMethod == null) {
-            error.show("Attempted to call undefined method "+aClass.getName()+"::" + methodName);          
+          error.show("Attempted to call undefined method " + aClass.getName() + "::" + methodName);
         }
         paramCompare(aMethod, exprList);
         result = new MessageSendStatement(new MessageSendToSuper(new Variable("super", aClass), aMethod, exprList, aClass));
@@ -1235,48 +1280,51 @@ public class Compiler {
             // verificando se a variavel pra quem estou atribuindo
             // realmente existe
             variable = symbolTable.getInLocal(variableName);
-            if(variable == null)
-              error.show("Variable '"+variableName+"' doesn't exist in this context");
+            if (variable == null) {
+              error.show("Variable '" + variableName + "' doesn't exist in this context");
+            }
 
-            if(anExpr instanceof NumberExpr && !(variable.getType() instanceof IntType)){
-              error.show("Cannot assign value of primitive type '"+anExpr.getType().getName()
-                      +"' to '"+variable.getType().getName()+"'");
+            if (anExpr instanceof NumberExpr && !(variable.getType() instanceof IntType)) {
+              error.show("Cannot assign value of primitive type '" + anExpr.getType().getName()
+                      + "' to '" + variable.getType().getName() + "'");
             }
             // Verificando se nao eh expressao do tipo null
-            if(!(anExpr.getType() instanceof UndefinedType)){
+            if (!(anExpr.getType() instanceof UndefinedType)) {
               // Verificando tipos primitivos
-              if(anExpr.getType() instanceof StringType){
-                
-              }else if(anExpr.getType() instanceof VoidType){
-                if(currentAssignment != null){
-                  error.show("Cannot assign to '"+variableName+"': method returns void.");
+              if (anExpr.getType() instanceof StringType) {
+              } else if (anExpr.getType() instanceof VoidType) {
+                if (currentAssignment != null) {
+                  error.show("Cannot assign to '" + variableName + "': method returns void.");
                 }
-              }else if(anExpr.getType() instanceof BooleanType){
-                if(!(variable.getType() instanceof BooleanType)){
-                  error.show("Type mismatch: tried to assign '"+anExpr.getType().getName()
-                        +"' to '"+variable.getType().getName()+"'");
-                } 
-              }else if(!(anExpr.getType() instanceof IntType) &&
-                !((ClassDec) anExpr.getType()).isChildOf(variable.getType().getName())){
-                error.show("Type mismatch: tried to assign '"+anExpr.getType().getName()
-                        +"' to '"+variable.getType().getName()+"'");
+              } else if (anExpr.getType() instanceof BooleanType) {
+                if (!(variable.getType() instanceof BooleanType)) {
+                  error.show("Type mismatch: tried to assign '" + anExpr.getType().getName()
+                          + "' to '" + variable.getType().getName() + "'");
+                }
+              } else if (!(anExpr.getType() instanceof IntType)
+                      && !((ClassDec) anExpr.getType()).isChildOf(variable.getType().getName())) {
+                error.show("Type mismatch: tried to assign '" + anExpr.getType().getName()
+                        + "' to '" + variable.getType().getName() + "'");
               }
-            }else if(!(variable.getType() instanceof ClassDec)){
-                error.show("Cannot assign null to '"+variable.getType().getName()+"'");
+            } else if (!(variable.getType() instanceof ClassDec)) {
+              error.show("Cannot assign null to '" + variable.getType().getName() + "'");
             }
-            
-            result = new AssignmentStatement(variable,anExpr);
+            if(anExpr instanceof NullExpr)
+              variable.setIsNull(true);
+            else
+              variable.setIsNull(false);
+            result = new AssignmentStatement(variable, anExpr);
             currentAssignment = null;
             break;
           case IDENT:
-           id = lexer.getStringValue();
+            id = lexer.getStringValue();
             // id id;
             // variableName id
             // variable = symbolTable.getIn
             // verificando se o TIPO existe
             aClass = symbolTable.getInGlobal(variableName);
-            if(aClass == null){
-              error.show("Class '"+variableName+"' doesn't exist");
+            if (aClass == null) {
+              error.show("Class '" + variableName + "' doesn't exist");
             }
             //symbolTable.putInLocal(id, new Variable(id,aClass));
             // variableName must be the name of a class
@@ -1291,35 +1339,63 @@ public class Compiler {
             lexer.nextToken();
             methodName = lexer.getStringValue();
             lexer.nextToken();
-            exprList = getRealParameters();
-            //lexer.nextToken();
-            // verificando se a variavel existe
-            variable = symbolTable.getInLocal(variableName);
-            if(variable == null)
-              error.show("Undefined variable '"+variableName+"'");
-            
-            // verificando se o metodo existe na classe daquela variavel
-            if(!(variable.getType() instanceof ClassDec)){
-              error.show("Cannot call method '"+methodName+"' in a non-object");
+            if(lexer.token == Symbol.LEFTPAR){
+              exprList = getRealParameters();
+              
+              // Verificando se o metodo eh estatico
+              aClass = symbolTable.getInGlobal(variableName);
+              if(aClass != null){
+                aMethod = aClass.getMethod(methodName);
+                if(aMethod == null){
+                  error.show("Attempt to call to undefined method ");
+                }
+                result = new MessageSendStatement(new MessageSendStatic(aClass, aMethod, exprList));
+                break;
+              // Metodo nao-estatico
+              }else{
+                // verificando se a variavel existe
+                variable = symbolTable.getInLocal(variableName);
+                if (variable == null) {
+                  error.show("Undefined variable '" + variableName + "'");
+                }
+
+                // verificando se o metodo existe na classe daquela variavel
+                if (!(variable.getType() instanceof ClassDec)) {
+                  error.show("Cannot call method '" + methodName + "' in a non-object");
+                }
+                aMethod = ((ClassDec) (variable.getType())).getMethod(methodName,false,true,false);
+                if (aMethod == null) {
+                  if (currentMethod.getName().equals(methodName)) {
+                    aMethod = currentMethod;
+                  } else {
+                    error.show("Call to undefined method '" + methodName + "'");
+                  }
+                }
+                if (aMethod != null && aMethod.isIsStatic()) {
+                  error.show("Trying to call static method from non-static context");
+                }
+                if (!(aMethod.getType() instanceof VoidType) && currentAssignment == null) {
+                  error.show("Return value is not assigned to any variable");
+                }
+                // comparando os parametros
+                //paramCompare(aMethod, exprList);
+                result = new MessageSendStatement(
+                        new MessageSendToVariable(variable,
+                        aMethod, exprList));
+                break;
+              }
+            }else{ // Acessando variavel estatica
+              ClassDec cd = symbolTable.getInGlobal(variableName);
+              if(cd == null)
+                error.show("Attempt to access property '"+methodName+"' in undefined class '"+variableName+"'");
+              Variable v = cd.getVariable(methodName);
+              if(lexer.token != Symbol.ASSIGN){
+                error.show("Assignment expected");
+              }
+              lexer.nextToken();
+              result = new AssignmentStatement(v,expr());
+              break;
             }
-            aMethod = ((ClassDec)(variable.getType())).getMethod(methodName);
-            if(aMethod == null){
-              if(currentMethod.getName().equals(methodName))
-                aMethod = currentMethod;
-              else
-                error.show("Call to undefined method '"+methodName+"'");
-            }
-            if(aMethod != null && aMethod.isIsStatic())
-              error.show("Trying to call static method from non-static context");
-            if(!(aMethod.getType() instanceof VoidType) && currentAssignment == null){
-              error.show("Return value is not assigned to any variable");
-            }
-            // comparando os parametros
-            //paramCompare(aMethod, exprList);
-            result = new MessageSendStatement(
-             new MessageSendToVariable( variable,
-             aMethod, exprList ) );
-            break;
           default:
             error.show(". or = expected");
         }
@@ -1334,9 +1410,11 @@ public class Compiler {
     //lexer.nextToken();
     return result;
   }
-  private boolean hasMethod(String name){
+
+  private boolean hasMethod(String name) {
     return false;
   }
+
   private boolean startExpr(Symbol token) {
 
     return lexer.token == Symbol.FALSE

@@ -9,16 +9,18 @@ package ast;
  * @author endel
  */
 public class MessageSendStatic extends MessageSend{
-  public MessageSendStatic(Variable variable, MethodDec method, ExprList exprList) {
-    super(variable, method, exprList);
+  public MessageSendStatic(ClassDec c, MethodDec method, ExprList exprList) {
+    super(new Variable(null, c), method, exprList);
+    classDec = c;
   }
   @Override
   public void genK(PW pw, boolean putParenthesis) {
-    pw.print(getVariable().getType().getName());
+    pw.print(classDec.getName());
     pw.print(".");
     pw.print(getMethod().getName());
     pw.print("(");
-    getExprList().genK(pw);
+    if(getExprList() != null)
+      getExprList().genK(pw);
     pw.print(")");
   }
 
@@ -26,5 +28,5 @@ public class MessageSendStatic extends MessageSend{
   public Type getType() {
     return getMethod().getType();
   }
-  
+  protected ClassDec classDec;
 }

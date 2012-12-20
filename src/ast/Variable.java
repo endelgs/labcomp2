@@ -16,6 +16,15 @@ public class Variable {
       pw.print(name);
     }
 
+  public boolean isIsNull() {
+    return isNull;
+  }
+
+  public void setIsNull(boolean isNull) {
+    this.isNull = isNull;
+  }
+    
     private String name;
     private Type type;
+    private boolean isNull;
 }
