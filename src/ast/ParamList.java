@@ -23,8 +23,9 @@ public class ParamList {
     }
     public void genK(PW pw){
       for (int i = 0; i < paramList.size(); i++) {
-        paramList.get(i).genK(pw);
-        if (i < paramList.size()) {
+        pw.print(paramList.get(i).getType().getName()+" ");
+        pw.print(paramList.get(i).getName()+" ");
+        if (i < paramList.size()-1) {
           pw.print(",");
         }
       }

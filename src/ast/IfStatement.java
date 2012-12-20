@@ -18,9 +18,8 @@ public class IfStatement extends Statement{
   public void genK(PW pw) {
     pw.print("if(");
     expr.genK(pw, false);
-    pw.println(")");
+    pw.print(")");
     ifStatements.genK(pw);
-    
     if(elseStatements != null)
       elseStatements.genK(pw);
     

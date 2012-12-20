@@ -7,7 +7,7 @@ public class MessageSendStatement extends Statement {
 
    public void genK( PW pw ) {
       messageSend.genK(pw);
-      pw.println(";");
+      //pw.println(";");
    }
 
    private MessageSend  messageSend;

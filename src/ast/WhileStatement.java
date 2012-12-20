@@ -17,7 +17,7 @@ public class WhileStatement extends Statement {
     
     pw.print("while(");
     expr.genK(pw, false);
-    pw.println(")");
+    pw.print(")");
     statement.genK(pw);
   }
 

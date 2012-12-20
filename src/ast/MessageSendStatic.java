@@ -10,7 +10,7 @@ package ast;
  */
 public class MessageSendStatic extends MessageSend{
   public MessageSendStatic(ClassDec c, MethodDec method, ExprList exprList) {
-    super(new Variable(null, c), method, exprList);
+    super(new Variable(c.getName(), c), method, exprList);
     classDec = c;
   }
   @Override

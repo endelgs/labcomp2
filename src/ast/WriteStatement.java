@@ -14,7 +14,7 @@ public class WriteStatement extends Statement{
   public void genK(PW pw) {
     pw.print("write(");
     exprList.genK(pw);
-    pw.println(");");
+    pw.print(")");
   }
 
   public ExprList getExprList() {

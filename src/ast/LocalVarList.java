@@ -26,8 +26,7 @@ public class LocalVarList extends Statement{
   public void genK(PW pw) {
     for(int i = 0; i < localList.size(); i++){
       pw.print(localList.get(i).getType().getName()+" ");
-      localList.get(i).genK(pw);
-      pw.println(";");
+      pw.print(localList.get(i).getName());
     }
   }
 

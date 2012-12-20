@@ -26,7 +26,7 @@ public class ClassDec extends Type {
      if(privateMethodList != null){
       privateMethodList.genK(pw);
      }
-     pw.print("}");
+     pw.println("}");
    }
    public String getCname() {
       return getName();

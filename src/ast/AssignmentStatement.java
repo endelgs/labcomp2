@@ -15,6 +15,8 @@ public class AssignmentStatement extends Statement{
   }
   @Override
   public void genK(PW pw) {
+    if(variable instanceof InstanceVariable && ((InstanceVariable) variable).getIsStatic())
+      pw.print(variable.getType().getName()+".");
     pw.print(variable.getName()+" = ");
     data.genK(pw,false);
   }

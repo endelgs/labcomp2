@@ -18,11 +18,11 @@ public class ReadStatement extends Statement{
   public void genK(PW pw) {
     pw.print("read (");
     for(int i = 0; i< variableList.size(); i++){
-      variableList.get(i).genK(pw);
+      pw.print(variableList.get(i).getName());
       if(i < variableList.size()-1)
         pw.print(",");
     }
-    pw.println(");");
+    pw.print(")");
   }
 
   public ArrayList<Variable> getVariableList() {

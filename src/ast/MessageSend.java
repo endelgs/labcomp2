@@ -15,7 +15,7 @@ abstract class MessageSend  extends Expr  {
     pw.print("(");
     if(exprList != null)
       exprList.genK(pw);
-    pw.println(")");
+    pw.print(")");
   }
   public ExprList getExprList() {
     return exprList;

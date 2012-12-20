@@ -311,6 +311,7 @@ public class Compiler {
     if (lexer.token != Symbol.SEMICOLON) {
       error.show("';' expected");
     }
+//    lexer.nextToken();
     return localVarList;
   }
   // OK
@@ -417,20 +418,23 @@ public class Compiler {
       case THIS:
       case IDENT:
       case SUPER:
-        statement = assignmentMessageSendLocalVarDecStatement();
         //lexer.nextToken();
+        statement = assignmentMessageSendLocalVarDecStatement();
         break;
       case INT:
         lexer.nextToken();
         statement = localDec(Type.intType);
+        lexer.nextToken();
         break;
       case BOOLEAN:
         lexer.nextToken();
         statement = localDec(Type.booleanType);
+        lexer.nextToken();
         break;
       case STRING:
         lexer.nextToken();
         statement = localDec(Type.stringType);
+        lexer.nextToken();
         break;
       case RETURN:
         statement = returnStatement();
@@ -1039,6 +1043,7 @@ public class Compiler {
                       if (aMethod.isIsStatic()) {
                         // Checando os parametros
                         paramCompare(aMethod, exprList);
+                        
                       }
                       return new MessageSendStatic(aClass, aMethod, exprList);
 
@@ -1122,7 +1127,9 @@ public class Compiler {
      */
 
     // an assignment, a message send or a local variable declaration
-
+    if(lexer.getLineNumber() == 18){
+      int i = 0;
+    }
     String methodName, variableName;
     ExprList exprList;
     Statement result = null;
@@ -1393,7 +1400,7 @@ public class Compiler {
                 error.show("Assignment expected");
               }
               lexer.nextToken();
-              result = new AssignmentStatement(v,expr());
+              result = new StaticAssignmentStatement(cd,v,expr());
               break;
             }
           default:
@@ -1407,7 +1414,7 @@ public class Compiler {
     if (lexer.token != Symbol.SEMICOLON) {
       error.show(CompilerError.semicolon_expected);
     }
-    //lexer.nextToken();
+    lexer.nextToken();
     return result;
   }
 

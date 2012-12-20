@@ -19,7 +19,7 @@ public class MethodDec extends Method {
       pw.print(getType().getName()+" ");
       
       // Imprimindo o nome do metodo
-      super.genK(pw);
+      pw.print(getName()+" ");
       
       // Imprimindo a lista de parametros
       pw.print("(");
@@ -30,6 +30,8 @@ public class MethodDec extends Method {
         for(int i = 0; i< getStatementList().size(); i++){
          Statement statement = getStatementList().get(i);
          statement.genK(pw);
+         if(!(statement instanceof IfStatement || statement instanceof WhileStatement))
+          pw.println(";");
         }
       }
       pw.printIdent("}\n");
