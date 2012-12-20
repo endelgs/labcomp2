@@ -31,7 +31,7 @@ public class Comp {
            if ( args.length == 2 )
               outputFileName = args[1];
            else 
-              outputFileName = inputFileName + ".htm";
+              outputFileName = inputFileName + ".kra2";
            resultFileName = inputFileName + ".txt";
               
            

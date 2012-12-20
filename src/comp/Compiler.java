@@ -1225,7 +1225,7 @@ public class Compiler {
                 error.show("Trying to access undefined method '" + methodName + "' in class '" + currentClass.getName() + "'");
               }
             }
-            result = new MessageSendStatement(new MessageSendToVariable(anInstanceVariable, aMethod, exprList));
+            result = new MessageSendStatement(new MessageSendToSelf(anInstanceVariable, aMethod, exprList));
             break;
           case LEFTPAR:
             // this.id()

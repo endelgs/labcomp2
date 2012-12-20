@@ -8,15 +8,7 @@ abstract class MessageSend  extends Expr  {
     this.variable = variable;
     this.method = method;
   }
-  public void genK(PW pw){
-    variable.genK(pw);
-    pw.print(".");
-    pw.print(method.getName());
-    pw.print("(");
-    if(exprList != null)
-      exprList.genK(pw);
-    pw.print(")");
-  }
+  public abstract void genK(PW pw);
   public ExprList getExprList() {
     return exprList;
   }

@@ -13,6 +13,9 @@ public class MessageSendStatic extends MessageSend{
     super(new Variable(c.getName(), c), method, exprList);
     classDec = c;
   }
+  public void genK(PW pw){
+    genK(pw,false);
+  }
   @Override
   public void genK(PW pw, boolean putParenthesis) {
     pw.print(classDec.getName());

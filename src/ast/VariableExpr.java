@@ -7,7 +7,9 @@ public class VariableExpr extends Expr {
     }
     
     public void genK( PW pw, boolean putParenthesis ) {
-        pw.print( v.getName() );
+      if(v instanceof InstanceVariable)
+        pw.print("this.");
+      pw.print( v.getName() );
     }
     
     public Type getType() {

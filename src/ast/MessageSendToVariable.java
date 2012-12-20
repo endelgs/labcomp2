@@ -9,7 +9,9 @@ public class MessageSendToVariable extends MessageSend {
   public Type getType() {
     return getMethod().getType();
   }
-
+  public void genK(PW pw){
+    genK(pw,false);
+  }
   public void genK(PW pw, boolean putParenthesis) {
       pw.print(variable.getName());
       pw.print(".");

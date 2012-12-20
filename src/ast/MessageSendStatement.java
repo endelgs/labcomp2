@@ -5,9 +5,9 @@ public class MessageSendStatement extends Statement {
     this.messageSend = messageSend;
   }
 
+  @Override
    public void genK( PW pw ) {
-      messageSend.genK(pw);
-      //pw.println(";");
+     messageSend.genK(pw);
    }
 
    private MessageSend  messageSend;

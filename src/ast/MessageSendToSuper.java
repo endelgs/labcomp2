@@ -10,7 +10,9 @@ public class MessageSendToSuper extends MessageSend {
     public Type getType() { 
         return getMethod().getType();
     }
-
+    public void genK(PW pw){
+      genK(pw,false);
+    }
     public void genK( PW pw, boolean putParenthesis ) {
       pw.print("super.");
       pw.print(getMethod().getName());
