@@ -32,6 +32,30 @@ public class ClassDec extends Type {
      }
      pw.println("}");
    }
+   public void genCStruct(PW pw){
+     pw.println("typedef struct _St_"+name+"{");
+     pw.printIdent("Func *vt;");
+     
+     // Imprimindo a lista de variaveis
+     if(instanceVariableList != null){
+       instanceVariableList.genC(pw);
+       
+     }
+     pw.println("} _class_"+name+";");
+   }
+   public void genC(PW pw){
+     
+     
+     // Imprimindo a lista de metodos publicos
+     if(publicMethodList != null){
+        publicMethodList.genC(pw);
+     }
+     // Imprimindo a lista de metodos privados
+     if(privateMethodList != null){
+      privateMethodList.genC(pw);
+     }
+
+   }
    public String getCname() {
       return getName();
    }

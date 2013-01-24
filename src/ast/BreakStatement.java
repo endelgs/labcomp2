@@ -14,4 +14,8 @@ public class BreakStatement extends Statement{
   public void genK(PW pw) {
     pw.println("break;");
   }
+  @Override
+  public void genC(PW pw) {
+    pw.println("break;");
+  }
 }

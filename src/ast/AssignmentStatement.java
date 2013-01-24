@@ -20,6 +20,11 @@ public class AssignmentStatement extends Statement{
     pw.print(variable.getName()+" = ");
     data.genK(pw,false);
   }
+  @Override
+  public void genC(PW pw) {
+    pw.print(variable.getName()+" = ");
+    data.genC(pw,false);
+  }
   private Variable variable;
   private Expr data;
 }

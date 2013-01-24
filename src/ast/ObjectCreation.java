@@ -28,7 +28,10 @@ public class ObjectCreation extends Expr{
   public void genK(PW pw, boolean putParenthesis) {
     pw.print("new "+classDec.getName()+"()");
   }
-
+  @Override
+  public void genC(PW pw, boolean putParenthesis) {
+    pw.println("new_"+classDec.getName()+"();");
+  }
   @Override
   public Type getType() {
     return classDec;

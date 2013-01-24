@@ -13,11 +13,18 @@ public class StaticVarAccess extends MessageSend{
     super(v,null,null);
     classDec = c;
   }
-  public void genK(PW pw){
+  @Override
+  public void genK(PW pw){}
+  @Override
+  public void genC(PW pw){
     genK(pw,false);
   }
   @Override
   public void genK(PW pw, boolean putParenthesis) {
+    pw.print(classDec.getName()+"."+variable.getName());
+  }
+  @Override
+  public void genC(PW pw, boolean putParenthesis) {
     pw.print(classDec.getName()+"."+variable.getName());
   }
 

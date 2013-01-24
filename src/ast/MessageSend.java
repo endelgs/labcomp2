@@ -13,6 +13,14 @@ abstract class MessageSend  extends Expr  {
     this.method = method;
   }
   public abstract void genK(PW pw);
+  public void genC(PW pw){
+    pw.print("_"+getMethod().getClassDec().getName()+"_"+getMethod().getName());
+      pw.print("(");
+      pw.print(variable.getName()+", ");
+      if(exprList != null)
+        exprList.genC(pw);
+      pw.print(")");
+  }
   public ExprList getExprList() {
     return exprList;
   }

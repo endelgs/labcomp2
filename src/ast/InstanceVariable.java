@@ -20,5 +20,9 @@ public class InstanceVariable extends Variable {
       pw.print(getType().getName()+" ");
       pw.println(getName()+";");
     }
+    public void genC(PW pw){
+      pw.print(getType().getName()+" ");
+      pw.println("_NOMEDACLASSE_"+getName()+";");
+    }
     private boolean isStatic;
 }

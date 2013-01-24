@@ -21,6 +21,12 @@ public class StaticAssignmentStatement extends Statement{
     pw.print(variable.getName()+" = ");
     data.genK(pw, true);
   }
+  @Override
+  public void genC(PW pw) {
+    pw.print(classDec.getName()+".");
+    pw.print(variable.getName()+" = ");
+    data.genC(pw, true);
+  }
   private ClassDec classDec;
   private Expr data;
   private Variable variable;

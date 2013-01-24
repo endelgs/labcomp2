@@ -34,7 +34,15 @@ public class ParamList {
         }
       }
     }
-
+    public void genC(PW pw){
+      for (int i = 0; i < paramList.size(); i++) {
+        //paramList.get(i).genK(pw);
+        pw.print(paramList.get(i).getType().getName()+" "+paramList.get(i).getName());
+        if (i < paramList.size() -1) {
+          pw.print(",");
+        }
+      }
+    }
     private ArrayList<Parameter> paramList;
 
 }

@@ -24,6 +24,16 @@ public class ReadStatement extends Statement{
     }
     pw.print(")");
   }
+  @Override
+  public void genC(PW pw) {
+    pw.print("read (");
+    for(int i = 0; i< variableList.size(); i++){
+      variableList.get(i).genK(pw);
+      if(i < variableList.size()-1)
+        pw.print(",");
+    }
+    pw.println(");");
+  }
 
   public ArrayList<Variable> getVariableList() {
     return variableList;

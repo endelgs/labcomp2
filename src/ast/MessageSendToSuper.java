@@ -25,5 +25,13 @@ public class MessageSendToSuper extends MessageSend {
         getExprList().genK(pw);
       pw.print(")");
     }
+    public void genC(PW pw, boolean putParenthesis) {
+      pw.print(variable.getName());
+      pw.print(".");
+      pw.print(getMethod().getName());
+      pw.print("(");
+      getExprList().genK(pw);
+      pw.print(")");
+  }
     private ClassDec superclass;
 }

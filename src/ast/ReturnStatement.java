@@ -15,6 +15,11 @@ public class ReturnStatement extends Statement{
     pw.print("return ");
     expr.genK(pw,false);
   }
+  @Override
+  public void genC(PW pw) {
+    pw.print("return ");
+    expr.genC(pw,false);
+  }
 
   public Expr getExpr() {
     return expr;

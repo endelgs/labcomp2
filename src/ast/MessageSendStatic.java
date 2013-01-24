@@ -8,7 +8,8 @@ package ast;
  *
  * @author endel
  */
-public class MessageSendStatic extends MessageSend{
+public class MessageSendStatic extends MessageSend {
+
   public MessageSendStatic(ClassDec c, MethodDec method, ExprList exprList) {
     super(new Variable(c.getName(), c), method, exprList);
     classDec = c;
@@ -16,6 +17,7 @@ public class MessageSendStatic extends MessageSend{
   public void genK(PW pw){
     genK(pw,false);
   }
+
   @Override
   public void genK(PW pw, boolean putParenthesis) {
     pw.print(classDec.getName());
@@ -28,8 +30,19 @@ public class MessageSendStatic extends MessageSend{
   }
 
   @Override
+  public void genC(PW pw, boolean putParenthesis) {
+    pw.print(getVariable().getType().getName());
+    pw.print("..");
+    pw.print(getMethod().getName());
+    pw.print("(");
+    getExprList().genC(pw);
+    pw.print(")");
+  }
+
+  @Override
   public Type getType() {
     return getMethod().getType();
   }
   protected ClassDec classDec;
+
 }

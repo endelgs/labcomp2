@@ -31,6 +31,18 @@ public class MethodList extends MemberList{
           methodList.get(i).genK(pw);
       }
     }
+    public void genC(PW pw){
+      if(methodList != null){
+        for(int i = 0; i< methodList.size(); i++)
+          methodList.get(i).genC(pw);
+      }
+    }
+    public void genCPrototype(PW pw){
+      if(methodList != null){
+        for(int i = 0; i< methodList.size(); i++)
+          methodList.get(i).genCPrototype(pw);
+      }
+    }
     private ArrayList<MethodDec> methodList;
 
 }

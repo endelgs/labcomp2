@@ -16,7 +16,11 @@ public class WriteStatement extends Statement{
     exprList.genK(pw);
     pw.print(")");
   }
-
+  public void genC(PW pw) {
+    pw.print("puts(");
+    exprList.genC(pw);
+    pw.println(");");
+  }
   public ExprList getExprList() {
     return exprList;
   }

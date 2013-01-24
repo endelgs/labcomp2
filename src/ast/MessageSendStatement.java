@@ -4,8 +4,9 @@
  */
 package ast;
 
-public class MessageSendStatement extends Statement { 
-  public MessageSendStatement(MessageSend messageSend){
+public class MessageSendStatement extends Statement {
+
+  public MessageSendStatement(MessageSend messageSend) {
     this.messageSend = messageSend;
   }
 
@@ -14,8 +15,9 @@ public class MessageSendStatement extends Statement {
      messageSend.genK(pw);
    }
 
-   private MessageSend  messageSend;
-
+  public void genC(PW pw) {
+    messageSend.genC(pw);
+    pw.println(";");
+  }
+  private MessageSend messageSend;
 }
-
-

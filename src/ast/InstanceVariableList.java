@@ -40,6 +40,14 @@ public class InstanceVariableList extends MemberList{
       }
       
     }
+    public void genC(PW pw){
+      if(instanceVariableList != null){
+        for(int i = 0; i < instanceVariableList.size(); i++){
+          instanceVariableList.get(i).genC(pw);
+        }
+      }
+      
+    }
     private ArrayList<InstanceVariable> instanceVariableList;
 
 }

@@ -14,4 +14,8 @@ public class NullStatement extends Statement{
   public void genK(PW pw) {
     pw.println(";");
   }
+  @Override
+  public void genC(PW pw) {
+    pw.println(";");
+  }
 }

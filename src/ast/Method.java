@@ -9,17 +9,30 @@ import lexer.Symbol;
 
 public class Method {
 
-    public Method( String name, Type type , Symbol qualifier, boolean isStatic) {
+    public Method( String name, Type type , Symbol qualifier, boolean isStatic,ClassDec classDec) {
         this.name = name;
         this.type = type;
         this.qualifier = qualifier;
         this.isStatic = isStatic;
         this.statementList = new StatementList();
+        this.classDec = classDec;
         this.paramList = new ParamList();
     }
     public void genK(PW pw){
       pw.print(name);
     }
+    public void genC(PW pw){
+      pw.print(name);
+    }
+
+  public ClassDec getClassDec() {
+    return classDec;
+  }
+
+  public void setClassDec(ClassDec classDec) {
+    this.classDec = classDec;
+  }
+    
     public String getName() { return name; }
 
     public Type getType() {
@@ -64,4 +77,5 @@ public class Method {
     private boolean isStatic = false;
     private StatementList statementList;
     private ParamList paramList;
+    private ClassDec classDec;
 }

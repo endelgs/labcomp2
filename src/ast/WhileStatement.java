@@ -8,17 +8,26 @@ import java.util.ArrayList;
 
 /**
  *
- *  @author endel
+ * @author endel
  */
 public class WhileStatement extends Statement {
 
   @Override
   public void genK(PW pw) {
-    
+
     pw.print("while(");
     expr.genK(pw, false);
     pw.print(")");
     statement.genK(pw);
+  }
+
+  @Override
+  public void genC(PW pw) {
+
+    pw.print("while(");
+    expr.genC(pw, false);
+    pw.println(")");
+    statement.genC(pw);
   }
 
   public Expr getExpr() {

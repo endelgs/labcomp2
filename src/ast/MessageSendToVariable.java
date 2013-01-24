@@ -25,4 +25,12 @@ public class MessageSendToVariable extends MessageSend {
         getExprList().genK(pw);
       pw.print(")");
   }
+  public void genC(PW pw, boolean putParenthesis) {
+      pw.print("_NOMEDACLASSE_"+getMethod().getName());
+      pw.print("(");
+      pw.print(variable.getName());
+      getExprList().genC(pw);
+      pw.print(")");
+      
+  }
 }

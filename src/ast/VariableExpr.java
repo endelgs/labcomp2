@@ -15,7 +15,9 @@ public class VariableExpr extends Expr {
         pw.print("this.");
       pw.print( v.getName() );
     }
-    
+    public void genC( PW pw, boolean putParenthesis ) {
+        pw.print( v.getName() );
+    }
     public Type getType() {
         return v.getType();
     }

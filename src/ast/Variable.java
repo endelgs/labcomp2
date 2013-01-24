@@ -19,6 +19,9 @@ public class Variable {
     public void genK(PW pw){
       pw.print(name);
     }
+    public void genC(PW pw){
+      pw.print(name);
+    }
 
   public boolean isIsNull() {
     return isNull;

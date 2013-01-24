@@ -24,6 +24,17 @@ public class IfStatement extends Statement{
       elseStatements.genK(pw);
     
   }
+  @Override
+  public void genC(PW pw) {
+    pw.print("if(");
+    expr.genC(pw, false);
+    pw.println(")");
+    ifStatements.genC(pw);
+    
+    if(elseStatements != null)
+      elseStatements.genC(pw);
+    
+  }
 
   public Expr getExpr() {
     return expr;

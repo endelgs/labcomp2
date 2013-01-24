@@ -25,4 +25,11 @@ public class CompositeStatement extends Statement{
     }
     pw.println("}");
   }
+  @Override
+  public void genC(PW pw) {
+    pw.println("{");
+    for(int i = 0; i < statementList.size(); i++)
+      statementList.get(i).genK(pw);
+    pw.println("}");
+  }
 }

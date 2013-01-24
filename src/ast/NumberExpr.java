@@ -16,7 +16,9 @@ public class NumberExpr extends Expr {
     public void genK( PW pw, boolean putParenthesis ) {
         pw.printIdent(value + "");
     }
-    
+    public void genC( PW pw, boolean putParenthesis ) {
+        pw.printIdent(value + "");
+    }
     public Type getType() {
         return Type.intType;
     }
