@@ -121,7 +121,8 @@ public class Comp {
             if ( program != null ) {
                PW pw = new PW();
                pw.set(printWriter);
-               program.genK(pw);
+               //program.genK(pw);
+               program.genC(pw);
                //program.genHTML( pw );
                if ( printWriter.checkError() ) {
                   System.out.println("There was an error in the output");

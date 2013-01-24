@@ -152,9 +152,9 @@ public class Compiler {
       // Se for um "(", eh um metodo
       if (lexer.token == Symbol.LEFTPAR) {
         if (qualifier == Symbol.PUBLIC) {
-          classDec.getPublicMethodList().addElement(methodDec(t, name, qualifier, isStatic));
+          classDec.getPublicMethodList().addElement(methodDec(t, name, qualifier, isStatic,classDec));
         } else if (qualifier == Symbol.PRIVATE) {
-          classDec.getPrivateMethodList().addElement(methodDec(t, name, qualifier, isStatic));
+          classDec.getPrivateMethodList().addElement(methodDec(t, name, qualifier, isStatic,classDec));
         } else {
           error.show("Invalid qualifier '" + lexer.getStringValue() + "'. public/private expected");
         }
@@ -209,12 +209,12 @@ public class Compiler {
   }
 
   // OK
-  private MethodDec methodDec(Type type, String name, Symbol qualifier, boolean isStatic) {
+  private MethodDec methodDec(Type type, String name, Symbol qualifier, boolean isStatic,ClassDec classDec) {
     /*   MethodDec ::= Qualifier ReturnType Id "("[ FormalParamDec ]  ")"
      "{"  StatementList "}"
      */
     // quando entra nesse metodo, ja ta no "("
-    MethodDec methodDec = new MethodDec(name, type, qualifier, isStatic);
+    MethodDec methodDec = new MethodDec(name, type, qualifier, isStatic,classDec);
     MethodDec aMethod = null;
     currentMethod = methodDec;
     lexer.nextToken(); // "parametros..."
