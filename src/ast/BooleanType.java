@@ -11,7 +11,7 @@ public class BooleanType extends Type {
   }
 
   @Override
-  public String getCname() {
+  public String getCName() {
     return "int";
   }
 }

@@ -12,7 +12,10 @@ public class Variable {
     }
 
     public String getName() { return name; }
-
+    public String getCName() { 
+      
+      return "_"+name;//"_"+type.getName()+"_"+name; 
+    }
     public Type getType() {
         return type;
     }
@@ -20,7 +23,7 @@ public class Variable {
       pw.print(name);
     }
     public void genC(PW pw){
-      pw.print(name);
+      pw.print(getCName());
     }
 
   public boolean isIsNull() {

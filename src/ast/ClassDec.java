@@ -1,65 +1,85 @@
 /**
- * 379930 Endel Guimaraes Silva
- * 400564 Felipe Augusto Rosa
+ * 379930 Endel Guimaraes Silva 400564 Felipe Augusto Rosa
  */
 package ast;
 
 public class ClassDec extends Type {
-   public ClassDec( String name ) {
-      super(name);
-      this.name = name;
-      instanceVariableList = new InstanceVariableList();
-      publicMethodList = new MethodList();
-      privateMethodList = new MethodList();
-   }
-   public void genK(PW pw){
-     pw.print("class "+name);
-     if(superclass != null)
-       pw.print(" extends "+superclass.getName());
-     pw.println("{");
-     pw.currentIndent = 1;
-     // Imprimindo a lista de variaveis
-     if(instanceVariableList != null){
-        instanceVariableList.genK(pw);
-     }
-     // Imprimindo a lista de metodos publicos
-     if(publicMethodList != null){
-        publicMethodList.genK(pw);
-     }
-     // Imprimindo a lista de metodos privados
-     if(privateMethodList != null){
-      privateMethodList.genK(pw);
-     }
-     pw.println("}");
-   }
-   public void genCStruct(PW pw){
-     pw.println("typedef struct _St_"+name+"{");
-     pw.printIdent("Func *vt;");
-     
-     // Imprimindo a lista de variaveis
-     if(instanceVariableList != null){
-       instanceVariableList.genC(pw);
-       
-     }
-     pw.println("} _class_"+name+";");
-   }
-   public void genC(PW pw){
-     
-     
-     // Imprimindo a lista de metodos publicos
-     if(publicMethodList != null){
-        publicMethodList.genC(pw);
-     }
-     // Imprimindo a lista de metodos privados
-     if(privateMethodList != null){
-      privateMethodList.genC(pw);
-     }
 
-   }
-   public String getCname() {
-      return getName();
-   }
-   public ClassDec getSuperclass() {
+  public ClassDec(String name) {
+    super(name);
+    this.name = name;
+    instanceVariableList = new InstanceVariableList();
+    publicMethodList = new MethodList();
+    privateMethodList = new MethodList();
+  }
+
+  public void genK(PW pw) {
+    pw.print("class " + name);
+    if (superclass != null) {
+      pw.print(" extends " + superclass.getName());
+    }
+    pw.println("{");
+    pw.currentIndent = 1;
+    // Imprimindo a lista de variaveis
+    if (instanceVariableList != null) {
+      instanceVariableList.genK(pw);
+    }
+    // Imprimindo a lista de metodos publicos
+    if (publicMethodList != null) {
+      publicMethodList.genK(pw);
+    }
+    // Imprimindo a lista de metodos privados
+    if (privateMethodList != null) {
+      privateMethodList.genK(pw);
+    }
+    pw.println("}");
+  }
+
+  public void genCStruct(PW pw) {
+    pw.println("// DEFINICAO DA ESTRUTURA DA CLASSE " + name);
+    pw.println("typedef struct _St_" + name + "{");
+    pw.currentIndent = 2;
+    pw.printIdent("Func * vt;");
+    pw.println("");
+    // Imprimindo a lista de variaveis
+    if (instanceVariableList != null) {
+      instanceVariableList.genC(pw);
+
+    }
+    pw.println("} _class_" + name + ";");
+    pw.println("");
+    
+    pw.println("// Vetor de metodos publicos da classe "+name);
+    
+    // Imprimindo a lista de metodos publicos
+    if (publicMethodList != null) {
+      publicMethodList.genCVT(pw,this);
+    }
+  }
+
+  public void genC(PW pw) {
+
+    
+    // Imprimindo a lista de metodos publicos
+    if (publicMethodList != null) {
+      pw.println("// Imprimindo a lista de METODOS PUBLICOS da classe "+name);
+      publicMethodList.genC(pw);
+    }
+    pw.println("");
+    
+    // Imprimindo a lista de metodos privados
+    if (privateMethodList != null) {
+      pw.println("// Imprimindo a lista de METODOS PRIVADOS da classe "+name);
+      privateMethodList.genC(pw);
+    }
+    pw.println("");
+  }
+
+  public String getCname() {
+    return getName();
+  }
+
+  public ClassDec getSuperclass() {
     return superclass;
   }
 
@@ -70,9 +90,11 @@ public class ClassDec extends Type {
   public InstanceVariableList getInstanceVariableList() {
     return instanceVariableList;
   }
+
   public void setInstanceVariableList(InstanceVariableList instanceVariableList) {
     this.instanceVariableList = instanceVariableList;
   }
+
   public MethodList getPublicMethodList() {
     return publicMethodList;
   }
@@ -88,65 +110,73 @@ public class ClassDec extends Type {
   public void setPrivateMethodList(MethodList privateMethodList) {
     this.privateMethodList = privateMethodList;
   }
-  public MethodDec getMethod(String name){
-    return this.getMethod(name,false,true,true);
+
+  public MethodDec getMethod(String name) {
+    return this.getMethod(name, false, true, true);
   }
-  public MethodDec checkOverrideMethod(String name){
+
+  public MethodDec checkOverrideMethod(String name) {
     MethodDec m = null;
-    if(superclass == null)
+    if (superclass == null) {
       m = getMethod(name);
-    if(superclass != null)
+    }
+    if (superclass != null) {
       return superclass.checkOverrideMethod(name);
-    
-    
+    }
+
+
     return m;
   }
-  public MethodDec getMethod(String name, boolean includePrivateMethods, boolean includeSuperclassMethods, boolean includeStatic){
+
+  public MethodDec getMethod(String name, boolean includePrivateMethods, boolean includeSuperclassMethods, boolean includeStatic) {
     MethodDec methodDec;
-    for(int i = 0; i < publicMethodList.getSize();i++){
+    for (int i = 0; i < publicMethodList.getSize(); i++) {
       methodDec = publicMethodList.get(i);
-      if(!includeStatic && methodDec.isIsStatic()) 
+      if (!includeStatic && methodDec.isIsStatic()) {
         continue;
-      if(methodDec.getName().equals(name)){
+      }
+      if (methodDec.getName().equals(name)) {
         return methodDec;
       }
     }
-    if(includePrivateMethods){
-      for(int i = 0; i < privateMethodList.getSize();i++){
-       methodDec = privateMethodList.get(i);
-        if(methodDec.getName().equals(name)){
+    if (includePrivateMethods) {
+      for (int i = 0; i < privateMethodList.getSize(); i++) {
+        methodDec = privateMethodList.get(i);
+        if (methodDec.getName().equals(name)) {
           return methodDec;
         }
       }
     }
-    if(includeSuperclassMethods && superclass != null){
+    if (includeSuperclassMethods && superclass != null) {
       return superclass.getMethod(name);
     }
     return null;
   }
-  public InstanceVariable getVariable(String name){
+
+  public InstanceVariable getVariable(String name) {
     InstanceVariable variable;
-    for(int i = 0; i < instanceVariableList.getSize(); i++){
-       variable = instanceVariableList.get(i);
-      if(variable.getName().equals(name)){
+    for (int i = 0; i < instanceVariableList.getSize(); i++) {
+      variable = instanceVariableList.get(i);
+      if (variable.getName().equals(name)) {
         return variable;
       }
     }
     return null;
   }
-  public boolean isChildOf(String name){
-    if(this.name.equals(name))
+
+  public boolean isChildOf(String name) {
+    if (this.name.equals(name)) {
       return true;
-    if(superclass == null)
+    }
+    if (superclass == null) {
       return false;
+    }
     return superclass.isChildOf(name);
   }
   private String name;
   private ClassDec superclass;
   private InstanceVariableList instanceVariableList;
   private MethodList publicMethodList, privateMethodList;
- // m�todos p�blicos get e set para obter e iniciar as vari�veis acima,
- // entre outros m�todos
-
-  
+  // m�todos p�blicos get e set para obter e iniciar as vari�veis acima,
+  // entre outros m�todos
 }

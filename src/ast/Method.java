@@ -34,7 +34,9 @@ public class Method {
   }
     
     public String getName() { return name; }
-
+    public String getCName(){
+      return "_"+this.getClassDec().getName()+"_"+name;
+    }
     public Type getType() {
         return type;
     }

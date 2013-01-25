@@ -6,9 +6,10 @@ package ast;
 
 public class InstanceVariable extends Variable {
 
-    public InstanceVariable( String name, Type type ,boolean isStatic) {
+    public InstanceVariable( String name, Type type ,boolean isStatic,ClassDec classDec) {
         super(name, type);
         this.isStatic = isStatic;
+        this.classDec = classDec;
     }
     public boolean getIsStatic(){
       return isStatic;
@@ -21,8 +22,13 @@ public class InstanceVariable extends Variable {
       pw.println(getName()+";");
     }
     public void genC(PW pw){
-      pw.print(getType().getName()+" ");
-      pw.println("_NOMEDACLASSE_"+getName()+";");
+      pw.print(getType().getCName()+" ");
+      
+      pw.println(getCName()+";");
+    }
+    public String getCName(){
+      return "_"+classDec.getName()+super.getCName();
     }
     private boolean isStatic;
+    private ClassDec classDec;
 }

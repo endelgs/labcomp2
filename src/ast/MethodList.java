@@ -43,6 +43,18 @@ public class MethodList extends MemberList{
           methodList.get(i).genCPrototype(pw);
       }
     }
+    public void genCVT(PW pw,ClassDec classDec){
+      if(methodList != null){
+        pw.println("Func VTclass_"+classDec.getName()+"[] = {");
+        for(int i = 0; i< methodList.size(); i++){
+          pw.printIdent(methodList.get(i).getCName());
+          if(i < methodList.size()-1)
+            pw.print(",");
+          pw.println("");
+          }
+        pw.print("};");
+      }
+    }
     private ArrayList<MethodDec> methodList;
 
 }

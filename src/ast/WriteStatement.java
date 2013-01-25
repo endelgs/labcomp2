@@ -17,9 +17,18 @@ public class WriteStatement extends Statement{
     pw.print(")");
   }
   public void genC(PW pw) {
-    pw.print("puts(");
-    exprList.genC(pw);
-    pw.println(");");
+    for(int i = 0; i < exprList.getSize(); i++){
+      if(exprList.getElement(i).getType() instanceof StringType){
+        pw.print("puts(");
+        exprList.getElement(i).genC(pw,false);
+        pw.println(");");
+      }else{
+        pw.print("printf(\"%d \", ");
+        exprList.getElement(i).genC(pw,false);
+        pw.println(");");
+      }
+    }
+    
   }
   public ExprList getExprList() {
     return exprList;

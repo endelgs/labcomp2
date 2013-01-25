@@ -26,13 +26,26 @@ public class ReadStatement extends Statement{
   }
   @Override
   public void genC(PW pw) {
-    pw.print("read (");
     for(int i = 0; i< variableList.size(); i++){
-      variableList.get(i).genK(pw);
+      if(variableList.get(i).getType() instanceof IntType){
+        pw.print("{\n"
+                + "char __s[512];\n"
+                + "gets(__s);\n"
+                + "sscanf(__s, \"%d\", &"
+                + variableList.get(i).getCName()
+                + ");\n"
+                + "}");
+      }else{
+        pw.print("{char __s[512];gets(__s);");
+        variableList.get(i).genC(pw);
+        pw.print("= malloc(strlen(__s) + 1);strcpy(");
+        variableList.get(i).genC(pw);
+        pw.println(", __s);}");
+      }
+      
       if(i < variableList.size()-1)
         pw.print(",");
     }
-    pw.println(");");
   }
 
   public ArrayList<Variable> getVariableList() {

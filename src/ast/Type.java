@@ -16,17 +16,24 @@ abstract public class Type {
     public static Type voidType = new VoidType();
     public static Type undefinedType = new UndefinedType();
 
+    public String getCName(){
+      
+      return "_class_"+name;
+    }
     public String getName() {
-        return name;
+
+      return name;
     }
     public void genK(PW pw){
       pw.print(name+" ");
     }
     public void genC(PW pw){
-      
-      pw.print(name+" ");
+      if(this instanceof StringType)
+        pw.print("char * ");
+      else
+        pw.print(name+" ");
     }
-    abstract public String getCname();
+//    abstract public String getCname();
 
     private String name;
 }

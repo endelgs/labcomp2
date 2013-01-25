@@ -9,8 +9,12 @@ public class StringType extends Type {
     public StringType() {
         super("String");
     }
-   public String getCname() {
+   public String getCName() {
       return "char *";
    }
+   public void genC(PW pw){
+      
+      pw.print(getCName());
+    }
    
 }

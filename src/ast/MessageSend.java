@@ -16,7 +16,8 @@ abstract class MessageSend  extends Expr  {
   public void genC(PW pw){
     pw.print("_"+getMethod().getClassDec().getName()+"_"+getMethod().getName());
       pw.print("(");
-      pw.print(variable.getName()+", ");
+      variable.genC(pw);
+      pw.print(", ");
       if(exprList != null)
         exprList.genC(pw);
       pw.print(")");

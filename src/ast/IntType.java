@@ -9,8 +9,10 @@ public class IntType extends Type {
     public IntType() {
         super("int");
     }
-   public String getCname() {
+   public String getCName() {
       return "int";
    }
-
+   public void genC(PW pw){
+     pw.print(getCName());
+   }
 }
