@@ -31,8 +31,10 @@ public class ReadStatement extends Statement{
         pw.print("{\n"
                 + "char __s[512];\n"
                 + "gets(__s);\n"
-                + "sscanf(__s, \"%d\", &"
-                + variableList.get(i).getCName()
+                + "sscanf(__s, \"%d\", &");
+        if(variableList.get(i) instanceof InstanceVariable)
+          pw.print("this->");
+        pw.print(variableList.get(i).getCName()
                 + ");\n"
                 + "}");
       }else{

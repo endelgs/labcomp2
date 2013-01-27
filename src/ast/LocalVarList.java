@@ -37,7 +37,8 @@ public class LocalVarList extends Statement{
   public void genC(PW pw) {
     for(int i = 0; i < localList.size(); i++){
       pw.print(localList.get(i).getType().getCName()+" ");
-      
+      if(localList.get(i).getType() instanceof ClassDec)
+        pw.print("* ");
       pw.print(localList.get(i).getCName());
       pw.println(";");
     }

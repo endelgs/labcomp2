@@ -47,13 +47,23 @@ public class MethodList extends MemberList{
       if(methodList != null){
         pw.println("Func VTclass_"+classDec.getName()+"[] = {");
         for(int i = 0; i< methodList.size(); i++){
-          pw.printIdent(methodList.get(i).getCName());
+          pw.printIdent("( void (*)() )"+methodList.get(i).getCName());
           if(i < methodList.size()-1)
             pw.print(",");
           pw.println("");
           }
-        pw.print("};");
+        pw.println("};");
       }
+    }
+    
+    /*
+     * Metodo que BUSCA um metodo na lista
+     */
+    public int searchMethod(String name){
+      for(int i = 0; i< methodList.size();i++)
+        if(methodList.get(i).getName().equals(name))
+          return i;
+      return -1;
     }
     private ArrayList<MethodDec> methodList;
 

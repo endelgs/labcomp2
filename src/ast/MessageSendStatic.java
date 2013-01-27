@@ -17,7 +17,9 @@ public class MessageSendStatic extends MessageSend {
   public void genK(PW pw){
     genK(pw,false);
   }
-
+public void genC(PW pw){
+    genC(pw,false);
+  }
   @Override
   public void genK(PW pw, boolean putParenthesis) {
     pw.print(classDec.getName());

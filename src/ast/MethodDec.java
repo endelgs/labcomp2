@@ -46,7 +46,7 @@ public class MethodDec extends Method {
       // Imprimindo o tipo de retorno
       getType().genC(pw );
       
-      pw.print("* _"+getClassDec().getName()+"_"+getName());     
+      pw.print(" _"+getClassDec().getName()+"_"+getName());     
       
       // Imprimindo o nome do metodo
       //super.genC(pw);
@@ -70,7 +70,7 @@ public class MethodDec extends Method {
       pw.printIdent("");      
       
       // Imprimindo o tipo de retorno
-      getType().genK(pw);
+      getType().genC(pw);
       
       // Imprimindo o nome do metodo
       //if(getName().equals(""))

@@ -17,6 +17,9 @@ public class MessageSendToSuper extends MessageSend {
     public void genK(PW pw){
       genK(pw,false);
     }
+    public void genC(PW pw){
+      genC(pw,false);
+    }
     public void genK( PW pw, boolean putParenthesis ) {
       pw.print("super.");
       pw.print(getMethod().getName());

@@ -15,6 +15,7 @@ public class MessageSendStatement extends Statement {
      messageSend.genK(pw);
    }
 
+  @Override
   public void genC(PW pw) {
     messageSend.genC(pw);
     pw.println(";");

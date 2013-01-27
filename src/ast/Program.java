@@ -23,25 +23,34 @@ public class Program {
     pw.println("#include <malloc.h>");
     pw.println("#include <stdlib.h>");
     pw.println("#include <stdio.h>");
+    pw.println("#include <string.h>");
     pw.println("typedef int boolean;");
     pw.println("#define true 1");
     pw.println("#define false 0");
     pw.println("typedef void (*Func)();");
     pw.println("");
     
+    pw.println("// Gerando todas as STRUCTS");
     for (int i = 0; i < classList.size(); i++) {
       classList.get(i).genCStruct(pw);
     }
-    
-    // gerando os prototipos de todas as funcoes
+    pw.println("// Gerando os PROTOTIPOS de todas as funcoes");
     for (int i = 0; i < classList.size(); i++) {
-      pw.println("// PROTOTIPOS dos metodos da classe "+classList.get(i).getName());
-      pw.println("");
+      classList.get(i).genConstructorPrototype(pw);
       classList.get(i).getPrivateMethodList().genCPrototype(pw);
       classList.get(i).getPublicMethodList().genCPrototype(pw);
     }
+    pw.println("// Gerando os VETORES de METODOS");
     for (int i = 0; i < classList.size(); i++) {
+      if (classList.get(i).getPublicMethodList() != null) {
+        classList.get(i).getPublicMethodList().genCVT(pw,classList.get(i));
+      }
+    }
+    pw.println("// Gerando a IMPLEMENTACAO das classes");
+    for (int i = 0; i < classList.size(); i++) {
+      classList.get(i).genConstructor(pw);
       classList.get(i).genC(pw);
+      
     }
     pw.println("// Codigo para o MAIN");
     pw.printlnIdent("int main() {\n"

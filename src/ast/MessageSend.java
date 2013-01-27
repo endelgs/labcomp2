@@ -4,6 +4,8 @@
  */
 package ast;
 
+import java.util.ArrayList;
+
 
 abstract class MessageSend  extends Expr  {
 
@@ -13,15 +15,7 @@ abstract class MessageSend  extends Expr  {
     this.method = method;
   }
   public abstract void genK(PW pw);
-  public void genC(PW pw){
-    pw.print("_"+getMethod().getClassDec().getName()+"_"+getMethod().getName());
-      pw.print("(");
-      variable.genC(pw);
-      pw.print(", ");
-      if(exprList != null)
-        exprList.genC(pw);
-      pw.print(")");
-  }
+  public abstract void genC(PW pw);
   public ExprList getExprList() {
     return exprList;
   }

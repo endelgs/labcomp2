@@ -41,7 +41,7 @@ public class ParamList {
         //else
           //pw.print(paramList.get(i).getType().getName()+" "+paramList.get(i).getName());
         //pw.print(paramList.get(i).getType().getName()+" "+paramList.get(i).getName());
-        paramList.get(i).genC(pw);
+        paramList.get(i).genC(pw,true);
         if (i < paramList.size() -1) {
           pw.print(",");
         }

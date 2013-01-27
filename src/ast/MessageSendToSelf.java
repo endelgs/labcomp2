@@ -16,6 +16,9 @@ public class MessageSendToSelf extends MessageSend {
     public void genK(PW pw){
       genK(pw,false);
     }
+    public void genC(PW pw){
+      genC(pw,false);
+    }
     public void genK( PW pw, boolean putParenthesis ) {
       pw.print("this.");
       pw.print(variable.getName()+".");

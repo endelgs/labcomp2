@@ -24,6 +24,7 @@ public class ClassDec extends Type {
     if (instanceVariableList != null) {
       instanceVariableList.genK(pw);
     }
+    genConstructor(pw);
     // Imprimindo a lista de metodos publicos
     if (publicMethodList != null) {
       publicMethodList.genK(pw);
@@ -36,7 +37,6 @@ public class ClassDec extends Type {
   }
 
   public void genCStruct(PW pw) {
-    pw.println("// DEFINICAO DA ESTRUTURA DA CLASSE " + name);
     pw.println("typedef struct _St_" + name + "{");
     pw.currentIndent = 2;
     pw.printIdent("Func * vt;");
@@ -48,21 +48,29 @@ public class ClassDec extends Type {
     }
     pw.println("} _class_" + name + ";");
     pw.println("");
-    
-    pw.println("// Vetor de metodos publicos da classe "+name);
-    
-    // Imprimindo a lista de metodos publicos
-    if (publicMethodList != null) {
-      publicMethodList.genCVT(pw,this);
-    }
   }
-
+    public void genConstructorPrototype(PW pw){
+      String className = getName();
+      if(publicMethodList.searchMethod(getName()) == -1){
+        pw.println("_class_"+className+" *new_"+className+"();");
+      }
+    }
+    public void genConstructor(PW pw){
+      String className = getName();
+      if(publicMethodList.searchMethod(className) == -1){
+        pw.println("_class_"+className+" *new_"+className+"(){");
+        pw.println("_class_"+className+" *t;");
+        pw.println("if ( (t = malloc(sizeof(_class_"+className+"))) != NULL )");
+        pw.println("t->vt = VTclass_"+className+";");
+        pw.println("return t;");
+        pw.println("}");
+      }
+    }
   public void genC(PW pw) {
-
-    
     // Imprimindo a lista de metodos publicos
     if (publicMethodList != null) {
       pw.println("// Imprimindo a lista de METODOS PUBLICOS da classe "+name);
+      
       publicMethodList.genC(pw);
     }
     pw.println("");
