@@ -29,7 +29,7 @@ public class CompositeStatement extends Statement{
   public void genC(PW pw) {
     pw.println("{");
     for(int i = 0; i < statementList.size(); i++)
-      statementList.get(i).genK(pw);
+      statementList.get(i).genC(pw);
     pw.println("}");
   }
 }

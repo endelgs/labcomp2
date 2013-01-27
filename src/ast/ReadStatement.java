@@ -44,9 +44,6 @@ public class ReadStatement extends Statement{
         variableList.get(i).genC(pw);
         pw.println(", __s);}");
       }
-      
-      if(i < variableList.size()-1)
-        pw.print(",");
     }
   }
 

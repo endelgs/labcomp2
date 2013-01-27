@@ -44,17 +44,25 @@ public class MethodDec extends Method {
       
       pw.printIdent("");
       // Imprimindo o tipo de retorno
-      getType().genC(pw );
-      
-      pw.print(" _"+getClassDec().getName()+"_"+getName());     
+      pw.print(getType().getCName((getType() instanceof ClassDec)));
+      pw.print(" ");
+      // Imprimindo os qualificadores de escopo (static/private/public)
+      if(isIsStatic()){
+        pw.print("_static");
+      }
+      pw.print("_"+getClassDec().getName()+"_"+getName());     
       
       // Imprimindo o nome do metodo
       //super.genC(pw);
       
       // Imprimindo a lista de parametros
-      pw.print("(_class_"+getClassDec().getName()+" *this");
+      pw.print("(");
+      if(!isIsStatic()){
+        pw.print("_class_"+getClassDec().getName()+" *this");
+      }
       if(getParamList() != null && getParamList().getSize() > 0){
-        pw.print(",");
+        if(!isIsStatic())
+          pw.print(",");
         getParamList().genC(pw);
       }
       pw.println("){");
@@ -70,16 +78,24 @@ public class MethodDec extends Method {
       pw.printIdent("");      
       
       // Imprimindo o tipo de retorno
-      getType().genC(pw);
-      
+      pw.print(getType().getCName(true));
+      pw.print(" ");
+      // Imprimindo os qualificadores de escopo (static/private/public)
+      if(isIsStatic()){
+        pw.print("_static");
+      }
       // Imprimindo o nome do metodo
       //if(getName().equals(""))
       pw.print("_"+getClassDec().getName()+"_"+getName());
       
       // Imprimindo a lista de parametros
-      pw.print("(_class_"+getClassDec().getName()+" *this");
+      pw.print("(");
+      if(!isIsStatic())
+        pw.print("_class_"+getClassDec().getName()+" *this");
+      
       if(getParamList() != null && getParamList().getSize() > 0){
-        pw.print(",");
+        if(!isIsStatic())
+          pw.print(",");
         getParamList().genC(pw);
       }
       pw.println(");");

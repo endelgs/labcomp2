@@ -23,9 +23,11 @@ public class StaticAssignmentStatement extends Statement{
   }
   @Override
   public void genC(PW pw) {
-    pw.print(classDec.getName()+".");
+    pw.print("_static_");
+    pw.print(classDec.getName()+"_");
     pw.print(variable.getName()+" = ");
     data.genC(pw, true);
+    pw.print(";");
   }
   private ClassDec classDec;
   private Expr data;

@@ -17,8 +17,18 @@ abstract public class Type {
     public static Type undefinedType = new UndefinedType();
 
     public String getCName(){
-      
-      return "_class_"+name;
+      return getCName(false);
+    }
+    public String getCName(boolean withPointer){
+      if(this instanceof VoidType)
+        return "void * ";
+      if(this instanceof IntType)
+        return "int";
+      if(this instanceof StringType)
+        return "char * ";
+      String str = "_class_"+name;
+      if(withPointer) str+=" *";
+      return str;
     }
     public String getName() {
 

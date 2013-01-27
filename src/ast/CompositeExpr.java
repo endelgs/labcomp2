@@ -37,14 +37,14 @@ public class CompositeExpr extends Expr {
     if (putParenthesis) {
       pw.print("(");
     }
-    left.genK(pw, true);
+    left.genC(pw, true);
     String strSymbol = arrayOper.get(oper);
     if (strSymbol == null) {
       pw.println("internal error in CompositeExpr::genC");
     } else {
       pw.print(" " + strSymbol + " ");
     }
-    right.genK(pw, true);
+    right.genC(pw, true);
     if (putParenthesis) {
       pw.print(")");
     }

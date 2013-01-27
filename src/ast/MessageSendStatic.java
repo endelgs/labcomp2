@@ -33,11 +33,10 @@ public void genC(PW pw){
 
   @Override
   public void genC(PW pw, boolean putParenthesis) {
-    pw.print(getVariable().getType().getName());
-    pw.print("..");
-    pw.print(getMethod().getName());
-    pw.print("(");
-    getExprList().genC(pw);
+     pw.print("_static_"+variable.getType().getName()+"_"+getMethod().getName()+
+              "(");
+    if(getExprList() != null)
+      getExprList().genC(pw);
     pw.print(")");
   }
 

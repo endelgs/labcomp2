@@ -25,7 +25,12 @@ public class WhileStatement extends Statement {
   public void genC(PW pw) {
 
     pw.print("while(");
-    expr.genC(pw, false);
+    if (expr.getType() instanceof BooleanType) {
+      expr.genC(pw, true);
+      pw.print(" != false");
+    } else {
+      expr.genC(pw, false);
+    }
     pw.println(")");
     statement.genC(pw);
   }

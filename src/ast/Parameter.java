@@ -12,7 +12,7 @@ public class Parameter extends Variable {
     }
     public void genC(PW pw,boolean includeType){
       if(includeType)
-        pw.print(getType().getCName()+" ");
+        pw.print(getType().getCName((getType() instanceof ClassDec))+" ");
       pw.print(super.getCName());
     }
 

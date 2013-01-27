@@ -34,18 +34,27 @@ public class MessageSendToVariable extends MessageSend {
 
   @Override
   public void genC(PW pw, boolean putParenthesis) {
-    int methodIndex = ((ClassDec) variable.getType()).getPublicMethodList().searchMethod(getMethod().getName());
+    ClassDec cd = (ClassDec)variable.getType();
+    
+    // Faco a busca recursiva pelo metodo nas classes superiores
+    while(cd.getMethod(getMethod().getName(),true,false,true) == null)
+      cd = cd.getSuperclass();
+    
+    int methodIndex = ((ClassDec) variable.getType()).getPublicMethodList().findCVTIndex(getMethod().getCName(),true);
 
-    pw.print("( (void (*)(" + variable.getType().getCName() + " *");
+    pw.print("( ("+getMethod().getType().getCName()+" (*)(" + variable.getType().getCName() + " *");
     for (int i = 0; i < getMethod().getParamList().getSize(); i++) {
       Parameter p = getMethod().getParamList().get(i);
       pw.print("," + p.getType().getCName());
     }
     pw.print(")) " + variable.getCName() + "->vt[" + methodIndex + "] )(" + variable.getCName());
-    if(getExprList().getSize() > 0)
-      pw.print(",");
-    
-    getExprList().genC(pw);
+    if(getExprList() != null){
+      if(getExprList().getSize() > 0)
+        pw.print(",");
+
+      getExprList().genC(pw);
+    }
     pw.print(")");
   }
+  
 }

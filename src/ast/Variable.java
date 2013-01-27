@@ -23,7 +23,10 @@ public class Variable {
       pw.print(name);
     }
     public void genC(PW pw){
-      pw.print(getCName());
+      if(this instanceof InstanceVariable)
+        pw.print("this->"+getCName());
+      else
+        pw.print(getCName());
     }
 
   public boolean isIsNull() {
@@ -33,8 +36,14 @@ public class Variable {
   public void setIsNull(boolean isNull) {
     this.isNull = isNull;
   }
-    
+    public void setCurrentType(Type t){
+      lastValueType = t;
+    }
+    public Type getCurrentType(){
+      return lastValueType;
+    }
     private String name;
     private Type type;
+    private Type lastValueType;
     private boolean isNull;
 }

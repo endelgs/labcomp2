@@ -19,6 +19,7 @@ public class ReturnStatement extends Statement{
   public void genC(PW pw) {
     pw.print("return ");
     expr.genC(pw,false);
+    pw.println(";");
   }
 
   public Expr getExpr() {

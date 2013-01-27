@@ -15,9 +15,10 @@ public class VariableExpr extends Expr {
         pw.print("this.");
       pw.print( v.getName() );
     }
+  @Override
     public void genC( PW pw, boolean putParenthesis ) {
       if(v instanceof InstanceVariable)  
-        pw.print(v.getName()+"->");
+        pw.print("this->"+v.getCName());
       else
         pw.print( v.getCName() );
     }

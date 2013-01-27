@@ -22,7 +22,7 @@ public class InstanceVariable extends Variable {
       pw.println(getName()+";");
     }
     public void genC(PW pw){
-      pw.print(getType().getCName()+" ");
+      pw.print(getType().getCName(true)+" ");
       
       pw.println(getCName()+";");
     }
