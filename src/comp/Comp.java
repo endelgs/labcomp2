@@ -35,7 +35,7 @@ public class Comp {
            if ( args.length == 2 )
               outputFileName = args[1];
            else 
-              outputFileName = inputFileName + ".kra2";
+              outputFileName = inputFileName + ".c";
            resultFileName = inputFileName + ".txt";
               
            

@@ -185,7 +185,7 @@ public class Compiler {
     if (iv != null && (iv.getIsStatic() == isStatic)) {
       error.show("Redeclaration of instance variable '" + variableName + "'");
     }
-    instanceVariableList.addElement(new InstanceVariable(variableName, type, isStatic));
+    instanceVariableList.addElement(new InstanceVariable(variableName, type, isStatic,currentClass));
 
     // Caso haja mais de uma declaracao
     while (lexer.token == Symbol.COMMA) {
@@ -197,7 +197,7 @@ public class Compiler {
       iv = instanceVariableList.searchVariable(variableName);
 
       error.show("Redeclaration of instance variable '" + variableName + "'");
-      instanceVariableList.addElement(new InstanceVariable(variableName, type, isStatic));
+      instanceVariableList.addElement(new InstanceVariable(variableName, type, isStatic,currentClass));
       lexer.nextToken();
     }
     // Termino das declaracoes
